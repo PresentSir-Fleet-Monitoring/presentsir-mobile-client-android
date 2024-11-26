@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "549175197978",
+    "firebase_url": "https://bigo-c8fa2-default-rtdb.firebaseio.com",
+    "project_id": "bigo-c8fa2",
+    "storage_bucket": "bigo-c8fa2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:549175197978:android:2583ec82aaf25979cceca3",
+        "android_client_info": {
+          "package_name": "com.rdev.bstrack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-3BbhYPQz_8Mr8l5ag0YphICf9rj7fyg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

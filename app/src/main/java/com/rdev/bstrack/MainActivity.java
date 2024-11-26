@@ -1,5 +1,7 @@
 package com.rdev.bstrack;
 
+import static kotlinx.coroutines.CoroutineScopeKt.CoroutineScope;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,6 +26,7 @@ import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.onesignal.OneSignal;
 import com.rdev.bstrack.activity.LoginActivity;
 import com.rdev.bstrack.databinding.ActivityMainBinding;
 import com.rdev.bstrack.fragments.LocateBus;
@@ -48,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
             R.drawable.red_heart
     };
 
-
+    private String ONESIGNAL_APP_ID = "f841a344-67bc-4525-966e-f5276babe410";
     public static FloatingActionButton getShareLocationButton() {
         return shareLocationButton;
     }
@@ -57,6 +60,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Initialize OneSignal
+        OneSignal.initWithContext(this);
+        OneSignal.setAppId(ONESIGNAL_APP_ID);
+
+
+        String userEmail = "admin@gmail.com" ;
+        OneSignal.setExternalUserId(userEmail);
+        OneSignal.sendTag("name", "John Doe");
+        String s = OneSignal.getDeviceState().getUserId();
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
 

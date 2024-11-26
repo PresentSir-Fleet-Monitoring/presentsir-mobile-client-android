@@ -28,8 +28,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.onesignal.OneSignal;
 import com.rdev.bstrack.activity.LoginActivity;
+import com.rdev.bstrack.activity.RegisterOneActivity;
 import com.rdev.bstrack.databinding.ActivityMainBinding;
 import com.rdev.bstrack.fragments.LocateBus;
+import com.rdev.bstrack.helpers.SecureStorageHelper;
+import com.rdev.bstrack.modals.LoginResponse;
 import com.rdev.bstrack.sheets.AboutSheet;
 import com.rdev.bstrack.sheets.ProfileSheet;
 
@@ -59,68 +62,80 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Retrieve login response
+        LoginResponse loginResponse = SecureStorageHelper.getLoginResponse(this);
+
+        // Check if the login response is null
+        if (loginResponse == null || loginResponse.getUser() == null) {
+            // Redirect to LoginActivity if no valid login data
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+            return; // Exit the method to avoid further execution
+        }
+
+        LoginResponse.User user = loginResponse.getUser(); // Safe to use at this point
+
+        // Proceed with initializing the main activity
         setContentView(R.layout.activity_main);
 
         // Initialize OneSignal
         OneSignal.initWithContext(this);
         OneSignal.setAppId(ONESIGNAL_APP_ID);
 
+        // Set OneSignal tags
+        if (user.getEmail() != null) {
+            OneSignal.setExternalUserId(user.getEmail());
+        }
+        if (user.getName() != null) {
+            OneSignal.sendTag("name", user.getName());
+        }
+        if (user.getBus() != null) {
+            if (user.getBus().getRouteName() != null) {
+                OneSignal.sendTag("routeName", user.getBus().getRouteName());
+            }
+            OneSignal.sendTag("busID", String.valueOf(user.getBus().getBusId()));
+        }
 
-        String userEmail = "admin@gmail.com" ;
-        OneSignal.setExternalUserId(userEmail);
-        OneSignal.sendTag("name", "John Doe");
-        String s = OneSignal.getDeviceState().getUserId();
+        // Initialize UI components
+        initializeUI();
+    }
 
+    // Separate method for UI initialization to keep onCreate clean
+    private void initializeUI() {
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-
         BottomAppBar bottomAppBar = findViewById(R.id.my_bottom_app_bar);
 
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
-
         setContentView(binding.getRoot());
-        replaceFragment(new LocateBus());   // Default fragment module or screen ranjit
-
+        replaceFragment(new LocateBus()); // Default fragment module
 
         shareLocationButton = findViewById(R.id.shareLocationButton);
-        shareLocationButton.setOnClickListener(v -> {
-            createHeart();
-
-        });
+        shareLocationButton.setOnClickListener(v -> createHeart());
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
-            if(itemId == R.id.account){
+            if (itemId == R.id.account) {
                 ProfileSheet pf = new ProfileSheet();
-                pf.show(getSupportFragmentManager(),pf.getTag());
-            }else if(itemId == R.id.about ){
+                pf.show(getSupportFragmentManager(), pf.getTag());
+            } else if (itemId == R.id.about) {
                 AboutSheet as = new AboutSheet();
-                as.show(getSupportFragmentManager(),as.getTag());
-            }else if(itemId == R.id.user_complaints ){
-
+                as.show(getSupportFragmentManager(), as.getTag());
             }
             return true;
         });
 
         Button logoutButton = findViewById(R.id.logoutButton);
-
-        logoutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Sign out the user
-//                FirebaseAuth.getInstance().signOut();
-
-                // Redirect to LoginActivity
-                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                finish();
-            }
+        logoutButton.setOnClickListener(v -> {
+            SecureStorageHelper.clearAllData(getApplicationContext());
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
         });
-
-
     }
 
-//
 
     private void replaceFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -218,12 +233,6 @@ public class MainActivity extends AppCompatActivity {
     // Helper method to convert dp to pixels
     private int dpToPx(int dp) {
         return (int) (dp * getResources().getDisplayMetrics().density);
-    }
-    @Override
-    protected void onDestroy() {
-        CoordinatorLayout rootLayout = findViewById(R.id.root_layout);
-        rootLayout.removeAllViews();
-        super.onDestroy();
     }
 
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
+
 import com.google.gson.Gson;
 import com.rdev.bstrack.modals.LoginResponse;
 
@@ -26,12 +27,8 @@ public class SecureStorageHelper {
                     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             );
 
-            // Convert the response object to JSON
-            Gson gson = new Gson();
-            String responseJson = gson.toJson(response);
-
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString("login_response", responseJson);
+            editor.putString("login_response", new Gson().toJson(response));
             editor.apply();
         } catch (Exception e) {
             e.printStackTrace();
@@ -54,16 +51,56 @@ public class SecureStorageHelper {
             );
 
             String responseJson = sharedPreferences.getString("login_response", null);
-
-            if (responseJson != null) {
-                Gson gson = new Gson();
-                return gson.fromJson(responseJson, LoginResponse.class);
-            }
-
-            return null;
+            return responseJson != null ? new Gson().fromJson(responseJson, LoginResponse.class) : null;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    // Method to check if the login response is empty
+    public static boolean isLoginResponseEmpty(Context context) {
+        try {
+            MasterKey masterKey = new MasterKey.Builder(context)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build();
+
+            SharedPreferences sharedPreferences = EncryptedSharedPreferences.create(
+                    context,
+                    PREF_NAME,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
+
+            String responseJson = sharedPreferences.getString("login_response", null);
+            return responseJson == null || responseJson.isEmpty();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true; // Return true as a safe fallback
+        }
+    }
+
+    // Clear all stored data in SecureStorageHelper
+    public static void clearAllData(Context context) {
+        try {
+            MasterKey masterKey = new MasterKey.Builder(context)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build();
+
+            SharedPreferences sharedPreferences = EncryptedSharedPreferences.create(
+                    context,
+                    PREF_NAME,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
+
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.clear(); // Clear all stored data
+            editor.apply();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

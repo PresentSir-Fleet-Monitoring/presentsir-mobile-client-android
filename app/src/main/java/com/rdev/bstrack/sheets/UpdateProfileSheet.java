@@ -6,17 +6,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.rdev.bstrack.R;
+import com.rdev.bstrack.helpers.SecureStorageHelper;
+import com.rdev.bstrack.modals.LoginResponse;
 
 import java.util.ArrayList;
 
 public class UpdateProfileSheet extends BottomSheetDialogFragment {
+    EditText nameView,emailView,contactView,busView,genderView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -28,6 +33,18 @@ public class UpdateProfileSheet extends BottomSheetDialogFragment {
         view.findViewById(R.id.closeProfileButton).setOnClickListener(v -> {
             this.dismiss();
         });
+        LoginResponse.User user = SecureStorageHelper.getLoginResponse(getContext()).getUser();
+
+
+        nameView = view.findViewById(R.id.name);
+        emailView = view.findViewById(R.id.email);
+        contactView = view.findViewById(R.id.contact);
+
+        if (user != null){
+            nameView.setText(user.getName());
+            emailView.setText(user.getEmail());
+            contactView.setText(user.getContact());
+        }
 
         // Update Button
         view.findViewById(R.id.updateProfileButton).setOnClickListener(v -> {
@@ -61,7 +78,6 @@ public class UpdateProfileSheet extends BottomSheetDialogFragment {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         spinner.setAdapter(adapter);
-
 
         return view;
     }

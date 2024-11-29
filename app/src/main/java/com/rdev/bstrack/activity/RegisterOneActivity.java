@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +16,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.rdev.bstrack.R;
+import com.rdev.bstrack.modals.RegisterStepOne;
 
 public class RegisterOneActivity extends AppCompatActivity {
 
@@ -95,8 +95,14 @@ public class RegisterOneActivity extends AppCompatActivity {
             emailInputLayout.setError(null);
         }
 
+        RegisterStepOne stepOne = new RegisterStepOne();
+            stepOne.setEmail(email);
+            stepOne.setName(name);
+            stepOne.setPassword(password);
+
 //        TODO Send with name, password ,email.
         Intent intent = new Intent(RegisterOneActivity.this, RegisterTwoActivity.class);
+        intent.putExtra("STEP_ONE",stepOne);
         startActivity(intent);
 
     }

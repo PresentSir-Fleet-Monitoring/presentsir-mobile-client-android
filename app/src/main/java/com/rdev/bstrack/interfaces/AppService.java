@@ -1,12 +1,11 @@
 package com.rdev.bstrack.interfaces;
 
-import com.rdev.bstrack.modals.LoginResponse;
+import com.rdev.bstrack.modals.Buses;
 
 import retrofit2.Call;
-import retrofit2.http.POST;
-import retrofit2.http.Query;
+import retrofit2.http.GET;
 
 public interface AppService {
-    @POST("ps/api/auth/login")
-    Call<LoginResponse> getAllBuses();
+    @GET("ps/api/public/buses")
+    Call<Buses> getAllBuses();
 }

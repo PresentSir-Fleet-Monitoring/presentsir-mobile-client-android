@@ -19,11 +19,11 @@ public class Buses {
         this.routeName = routeName;
     }
 
-    public long getBusId() {
+    public String getBusId() {
         return busId;
     }
 
-    public void setBusId(long busId) {
+    public void setBusId(String busId) {
         this.busId = busId;
     }
 

@@ -11,6 +11,10 @@
 
 
     <item
+        android:title=""
+        app:showAsAction="ifRoom"/>
+
+    <item
         android:id="@+id/about"
         android:title="About"
         android:icon="@drawable/info_24px"

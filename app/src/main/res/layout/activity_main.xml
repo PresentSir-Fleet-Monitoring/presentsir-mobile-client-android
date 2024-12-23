@@ -13,61 +13,88 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- AppBarLayout with MaterialToolbar, making it scrollable -->
-        <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/appBarLayout"
-            android:layout_width="match_parent"
-            android:backgroundTint="#FFFF"
-            android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|enterAlways">
+        <androidx.cardview.widget.CardView
+            app:cardCornerRadius="25dp"
+            android:layout_marginTop="35dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_width="wrap_content">
 
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/topAppBar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:navigationContentDescription="Menu"
-                app:navigationIconTint="#FFFF"
-                app:title="PresentSir"
-                android:elevation="8dp"
-                app:navigationIcon="@drawable/emergency_share_24px"
-                app:titleTextColor="?attr/colorOnSurface">
-
-            <Button
-                android:layout_alignParentEnd="true"
-                style="?attr/materialIconButtonStyle"
-                android:layout_marginEnd="10dp"
-                android:layout_width="wrap_content"
-                android:layout_gravity="end"
-                android:layout_height="wrap_content"
-                app:icon="@drawable/call_24px"/>
-
-            <Button
-                android:id="@+id/logoutButton"
-                android:layout_alignParentEnd="true"
-                style="?attr/materialIconButtonStyle"
-                android:layout_marginEnd="10dp"
-                android:layout_width="wrap_content"
-                android:layout_gravity="end"
-                android:layout_height="wrap_content"
-                app:icon="@drawable/logout_24px"/>
-
-            </androidx.appcompat.widget.Toolbar>
-            <com.google.android.material.divider.MaterialDivider
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </com.google.android.material.appbar.AppBarLayout>
-
-        <!-- Main Content Area -->
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/topAppBar"
+            android:backgroundTint="@android:color/white"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:layout_marginBottom="50dp">
+
+            android:elevation="8dp">
+
+            <!-- RelativeLayout inside the Toolbar -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+
+                <ImageView
+                    android:id="@+id/app_logo"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"
+                    android:src="@drawable/location"
+                    />
+
+                <TextView
+                    android:id="@+id/toolbarTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/app_logo"
+                    android:text="Hey, Ranjit Patil"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/poppins_medium"
+                    android:textSize="15sp"
+                    android:layout_marginStart="5dp"
+                    android:layout_centerInParent="true" />
+
+
+                <ImageView
+                    android:id="@+id/speaker_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="25dp"
+                    android:layout_toStartOf="@+id/logoutButton"
+                    android:src="@drawable/volume_up_24px"
+                    />
+
+                <ImageView
+                    android:id="@+id/reminder_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="25dp"
+                    android:layout_toStartOf="@+id/speaker_button"
+                    android:src="@drawable/alarm_on_24px"
+                    />
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/logoutButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="25dp"
+                    android:src="@drawable/power_settings_new_24px"
+                    android:layout_centerVertical="true"
+                    />
+            </RelativeLayout>
+
+        </androidx.appcompat.widget.Toolbar>
+        </androidx.cardview.widget.CardView>
 
             <FrameLayout
                 android:id="@+id/main_fragment_container"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -77,51 +104,45 @@
 
             </FrameLayout>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/shareLocationButton"
-            style="@style/Widget.MaterialComponents.FloatingActionButton"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            app:backgroundTint="@android:color/transparent"
-            android:backgroundTint="#ffff"
-            app:elevation="0dp"
-            app:useCompatPadding="true"
-            app:layout_anchor="@id/my_bottom_app_bar" />
-
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/heart"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center|bottom"
-            android:layout_marginBottom="70dp"
-            app:srcCompat="@drawable/red_heart" />
-
-        <!-- BottomAppBar -->
         <com.google.android.material.bottomappbar.BottomAppBar
-            android:id="@+id/my_bottom_app_bar"
+            android:id="@+id/bottom_app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            app:backgroundTint="#FFFF"
+            app:backgroundTint="#ffff"
+            app:fabCradleMargin="20dp"
             app:fabAlignmentMode="center"
-            app:elevation="8dp"
             app:fabAnchorMode="cradle"
-            app:hideOnScroll="true" >
+            app:fabCradleRoundedCornerRadius="40dp"
+            app:fabCradleVerticalOffset="10dp">
 
             <com.google.android.material.bottomnavigation.BottomNavigationView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:id="@+id/bottomNavigationView"
-                app:labelVisibilityMode="labeled"
-                app:itemPaddingBottom="20dp"
-                app:itemActiveIndicatorStyle="?attr/colorSurfaceContainer"
-                app:menu="@menu/bottomappbar_menu"
-                app:itemIconSize="30dp"
-                android:background="@android:color/transparent" />
+                app:itemRippleColor="@android:color/white"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:itemActiveIndicatorStyle="@style/ShapeAppearance.Material3.Corner.None"
+                android:layout_marginEnd="16dp"
+                android:background="@android:color/transparent"
+                app:menu="@menu/bottomappbar_menu" />
 
         </com.google.android.material.bottomappbar.BottomAppBar>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/shareLocationButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:borderWidth="5dp"
+            app:backgroundTint="#FFFF"
+            app:fabCustomSize="65dp"
+            app:elevation="8dp"
+            app:tint="@null"
+            app:useCompatPadding="true"
+            android:src="@drawable/red_heart"
+            app:maxImageSize="45dp"
+            android:contentDescription="@string/app_name"
+            app:layout_anchorGravity="center_vertical"
+            app:layout_anchor="@id/bottom_app_bar" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </androidx.drawerlayout.widget.DrawerLayout>

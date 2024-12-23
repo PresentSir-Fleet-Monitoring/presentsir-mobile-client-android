@@ -4,81 +4,122 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.rdev.bstrack.R;
+import com.rdev.bstrack.helpers.ApiClient;
 import com.rdev.bstrack.helpers.SecureStorageHelper;
+import com.rdev.bstrack.interfaces.AuthService;
 import com.rdev.bstrack.modals.LoginResponse;
+import com.rdev.bstrack.modals.RequestBody;
+import com.rdev.bstrack.modals.User;
 
-import java.util.ArrayList;
+import java.io.IOException;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import timber.log.Timber;
 
 public class UpdateProfileSheet extends BottomSheetDialogFragment {
-    EditText nameView,emailView,contactView,busView,genderView;
+    private EditText nameView, contactView, passwordView;
+    private View profileSheet;
+    private LoginResponse.User user;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for the update profile sheet
-        View view = inflater.inflate(R.layout.update_profile_sheet, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Initialize the class-level profileSheet
+        profileSheet = inflater.inflate(R.layout.update_profile_sheet, container, false);
 
         // Close Button
-        view.findViewById(R.id.closeProfileButton).setOnClickListener(v -> {
+        profileSheet.findViewById(R.id.closeProfileButton).setOnClickListener(v -> {
             this.dismiss();
         });
-        LoginResponse.User user = SecureStorageHelper.getLoginResponse(getContext()).getUser();
 
+        LoginResponse loginResponse = SecureStorageHelper.getLoginResponse(getContext());
+        if (loginResponse != null) {
+            user = loginResponse.getUser();
+        }
 
-        nameView = view.findViewById(R.id.name);
-        emailView = view.findViewById(R.id.email);
-        contactView = view.findViewById(R.id.contact);
+        nameView = profileSheet.findViewById(R.id.name);
+        contactView = profileSheet.findViewById(R.id.contact);
+        passwordView = profileSheet.findViewById(R.id.password);
 
-        if (user != null){
+        if (user != null) {
             nameView.setText(user.getName());
-            emailView.setText(user.getEmail());
             contactView.setText(user.getContact());
         }
 
         // Update Button
-        view.findViewById(R.id.updateProfileButton).setOnClickListener(v -> {
-            // Handle the update button action here
-
-            // Get selected gender from RadioGroup
-            RadioGroup genderRadioGroup = view.findViewById(R.id.genderRadioGroup);
-            int selectedGenderId = genderRadioGroup.getCheckedRadioButtonId();
-            RadioButton selectedGenderRadioButton = view.findViewById(selectedGenderId);
-            String selectedGender = selectedGenderRadioButton.getText().toString();
-
-            // Get selected bus option from Spinner
-            Spinner busSpinner = view.findViewById(R.id.bus);
-            String selectedBus = busSpinner.getSelectedItem().toString();
-
-            // Display both selected values in a Toast (or handle them as needed)
-            Toast.makeText(getContext(), "Selected Gender: " + selectedGender + "\nSelected Bus: " + selectedBus, Toast.LENGTH_LONG).show();
+        profileSheet.findViewById(R.id.updateProfileButton).setOnClickListener(v -> {
+            updateAccount();
         });
 
-        // Spinner setup for bus options
-        Spinner spinner = view.findViewById(R.id.bus);
+        return profileSheet;
+    }
 
-        // Create a list of items for the dropdown
-        ArrayList<String> items = new ArrayList<>();
-        items.add("Bus 1");
-        items.add("Bus 2");
-        items.add("Bus 3");
+    public void updateAccount() {
+        // Get selected gender from RadioGroup
+        RadioGroup genderRadioGroup = profileSheet.findViewById(R.id.genderRadioGroup);
+        int selectedGenderId = genderRadioGroup.getCheckedRadioButtonId();
+        if (selectedGenderId == -1) {
+            Toast.makeText(getContext(), "Please select a gender.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        RadioButton selectedGenderRadioButton = profileSheet.findViewById(selectedGenderId);
+        String selectedGender = selectedGenderRadioButton.getText().toString();
 
-        // Set up the adapter
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, items);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        String contact = contactView.getText().toString().trim();
+        String name = nameView.getText().toString().trim();
+        String password = passwordView.getText().toString().trim();
 
-        spinner.setAdapter(adapter);
+        if (contact.isEmpty() || name.isEmpty() || password.isEmpty()) {
+            Toast.makeText(getContext(), "All fields must be filled out.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        return view;
+        if (user == null) {
+            Toast.makeText(getContext(), "User information is unavailable.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        User newUserData = new User(user.getEmail(), password, name, contact, selectedGender);
+        String busId = String.valueOf(user.getBus());
+        RequestBody requestBody = new RequestBody(newUserData, busId);
+
+//        ProgressBar progressBar = profileSheet.findViewById(R.id.progressBar);
+//        progressBar.setVisibility(View.VISIBLE);
+
+        AuthService authService = ApiClient.getClient().create(AuthService.class);
+        Call<Void> call = authService.registerUser(requestBody);
+
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+//                progressBar.setVisibility(View.GONE);
+                if (response.isSuccessful()) {
+                    Toast.makeText(getContext(), "Update Successful", Toast.LENGTH_SHORT).show();
+                } else {
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Timber.e("Update Error: %s", errorBody);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(getContext(), "Update failed. Code: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+//                progressBar.setVisibility(View.GONE);
+                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

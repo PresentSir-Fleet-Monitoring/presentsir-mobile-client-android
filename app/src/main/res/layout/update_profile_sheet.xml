@@ -84,17 +84,17 @@
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
                         android:textColor="?attr/colorOnSecondaryContainer"
-                        android:text="Email"
+                        android:text="Password"
                         android:fontFamily="@font/poppins_medium"
                         android:textSize="15sp"
                         android:layout_alignParentStart="true"
                         android:textStyle="bold"/>
                     <EditText
-                        android:id="@+id/email"
+                        android:id="@+id/password"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="?attr/colorOnTertiaryContainer"
-                        android:text="admin@gmail.com"
+                        android:text="new password"
                         android:textSize="15sp"
                         android:layout_alignParentEnd="true"
                         android:textStyle="bold"/>
@@ -165,32 +165,32 @@
                     </RadioGroup>
 
                 </RelativeLayout>
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/colorOnSecondaryContainer"
-                        android:text="Bus"
-                        android:layout_centerVertical="true"
-                        android:fontFamily="@font/poppins_medium"
-                        android:textSize="15sp"
-                        android:layout_alignParentStart="true"
-                        android:textStyle="bold"/>
-                    <Spinner
-                        android:id="@+id/bus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/colorOnTertiaryContainer"
-                        android:text="Bhighat"
-                        android:textSize="15sp"
-                        android:layout_alignParentEnd="true"
-                        android:textStyle="bold"/>
-                </RelativeLayout>
+<!--                <RelativeLayout-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginTop="15dp"-->
+<!--                    android:layout_marginStart="10dp"-->
+<!--                    android:layout_marginEnd="10dp">-->
+<!--                    <TextView-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:textColor="?attr/colorOnSecondaryContainer"-->
+<!--                        android:text="Bus"-->
+<!--                        android:layout_centerVertical="true"-->
+<!--                        android:fontFamily="@font/poppins_medium"-->
+<!--                        android:textSize="15sp"-->
+<!--                        android:layout_alignParentStart="true"-->
+<!--                        android:textStyle="bold"/>-->
+<!--                    <Spinner-->
+<!--                        android:id="@+id/bus"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:textColor="?attr/colorOnTertiaryContainer"-->
+<!--                        android:text="Bhighat"-->
+<!--                        android:textSize="15sp"-->
+<!--                        android:layout_alignParentEnd="true"-->
+<!--                        android:textStyle="bold"/>-->
+<!--                </RelativeLayout>-->
 
             </LinearLayout>
 

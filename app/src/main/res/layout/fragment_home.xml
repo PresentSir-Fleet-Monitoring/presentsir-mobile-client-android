@@ -6,35 +6,57 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragments.LocateBus">
 
-    <com.mapbox.mapboxsdk.maps.MapView
-        android:id="@+id/mapView"
+    <com.mapmyindia.sdk.maps.MapView
+        android:id="@+id/map_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/my_loc_button"
-        style="@style/Widget.MaterialComponents.FloatingActionButton"
         app:backgroundTint="#ffff"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="45dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="210dp"
         android:layout_marginEnd="16dp"
         app:tint="#000"
-        app:srcCompat="@drawable/ic_my_location"
+        app:srcCompat="@drawable/location_searching_24px"
         android:contentDescription="TODO" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-       android:id="@+id/bus_loc_button"
-        style="@style/Widget.MaterialComponents.FloatingActionButton"
+        android:id="@+id/bus_loc_button"
+        app:backgroundTint="#ffff"
+        app:tint="#000000"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="140dp"
+        android:layout_marginEnd="16dp"
+        app:srcCompat="@drawable/ic_directions_bus"
+        android:contentDescription="TODO" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/all_bus_button"
         app:backgroundTint="#ffff"
         app:tint="#000000"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
+        android:layout_marginBottom="180dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="110dp"
-        app:srcCompat="@drawable/ic_directions_bus"
+        app:srcCompat="@drawable/apps_24px"
+        android:contentDescription="TODO" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/timer_button"
+        app:backgroundTint="#FFFFFF"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="100dp"
+        android:layout_marginEnd="16dp"
+        app:maxImageSize="30dp"
+        app:srcCompat="@drawable/coffee_24px"
         android:contentDescription="TODO" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

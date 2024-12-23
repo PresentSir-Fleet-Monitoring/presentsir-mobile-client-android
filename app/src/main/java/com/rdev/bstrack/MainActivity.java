@@ -1,7 +1,5 @@
 package com.rdev.bstrack;
 
-import static kotlinx.coroutines.CoroutineScopeKt.CoroutineScope;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,12 +7,15 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
-import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
-import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -22,13 +23,15 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.mapmyindia.sdk.maps.MapmyIndia;
+import com.mmi.services.account.MapmyIndiaAccountManager;
 import com.onesignal.OneSignal;
 import com.rdev.bstrack.activity.LoginActivity;
-import com.rdev.bstrack.activity.RegisterOneActivity;
+import com.rdev.bstrack.constants.Constants;
 import com.rdev.bstrack.databinding.ActivityMainBinding;
 import com.rdev.bstrack.fragments.LocateBus;
 import com.rdev.bstrack.helpers.SecureStorageHelper;
@@ -36,15 +39,14 @@ import com.rdev.bstrack.modals.LoginResponse;
 import com.rdev.bstrack.sheets.AboutSheet;
 import com.rdev.bstrack.sheets.ProfileSheet;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
-    private BottomNavigationView bottomNavigationView;
+    private static final String TAG = "MainActivity";
     private static final int PERMISSION_REQUEST_LOCATION = 1001;
-    private long lastClickTime = 0;
-
-    private static FloatingActionButton shareLocationButton;
-
     private static final int[] IMAGE_RESOURCES = {
             R.drawable.heart_eye,
             R.drawable.pink_heart,
@@ -54,8 +56,17 @@ public class MainActivity extends AppCompatActivity {
             R.drawable.red_heart
     };
 
-    private String ONESIGNAL_APP_ID = "f841a344-67bc-4525-966e-f5276babe410";
-    public static FloatingActionButton getShareLocationButton() {
+    private List<Integer> reminderMeterList;
+    private BottomNavigationView bottomNavigationView;
+    private FloatingActionButton shareLocationButton;
+    private ImageView speakerButton;
+    private ImageView reminderButton;
+    private TextView titleTextView;
+    private long lastClickTime = 0;
+
+    public static boolean isSpeakerOn = true;
+
+    public FloatingActionButton getShareLocationButton(){
         return shareLocationButton;
     }
 
@@ -63,28 +74,53 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Retrieve login response
+        // MapmyIndia Initialization
+        initializeMapmyIndia();
+        // Check Login State
         LoginResponse loginResponse = SecureStorageHelper.getLoginResponse(this);
+        if (!isUserLoggedIn(loginResponse)) return;
 
-        // Check if the login response is null
+        // UI and SDK Initialization
+        initializeOneSignal(loginResponse.getUser());
+        initializeUI();
+        setupWindow();
+
+    }
+
+    private void initializeMapmyIndia() {
+        MapmyIndiaAccountManager.getInstance().setRestAPIKey(Constants.getMapMyIndiaApiKey());
+        MapmyIndiaAccountManager.getInstance().setMapSDKKey(Constants.getMapMyIndiaApiKey());
+        MapmyIndiaAccountManager.getInstance().setAtlasClientId(Constants.getMapMyIndiaClientId());
+        MapmyIndiaAccountManager.getInstance().setAtlasClientSecret(Constants.getMapMyIndiaClientSercret());
+        MapmyIndia.getInstance(getApplicationContext());
+    }
+
+    private boolean isUserLoggedIn(LoginResponse loginResponse) {
         if (loginResponse == null || loginResponse.getUser() == null) {
-            // Redirect to LoginActivity if no valid login data
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();
-            return; // Exit the method to avoid further execution
+            return false;
         }
+        return true;
+    }
 
-        LoginResponse.User user = loginResponse.getUser(); // Safe to use at this point
+    private void setupWindow() {
+        Window window = getWindow();
+        WindowManager.LayoutParams winParams = window.getAttributes();
+        winParams.flags &= ~WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
 
-        // Proceed with initializing the main activity
-        setContentView(R.layout.activity_main);
+        window.setAttributes(winParams);
+        window.getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        |View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        );
+    }
 
-        // Initialize OneSignal
+    private void initializeOneSignal(LoginResponse.User user) {
         OneSignal.initWithContext(this);
-        OneSignal.setAppId(ONESIGNAL_APP_ID);
+        OneSignal.setAppId(Constants.getOnesignalAppId());
 
-        // Set OneSignal tags
         if (user.getEmail() != null) {
             OneSignal.setExternalUserId(user.getEmail());
         }
@@ -97,43 +133,104 @@ public class MainActivity extends AppCompatActivity {
             }
             OneSignal.sendTag("busID", String.valueOf(user.getBus().getBusId()));
         }
-
-        // Initialize UI components
-        initializeUI();
     }
 
-    // Separate method for UI initialization to keep onCreate clean
     private void initializeUI() {
-        bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        BottomAppBar bottomAppBar = findViewById(R.id.my_bottom_app_bar);
-
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        replaceFragment(new LocateBus()); // Default fragment module
+        replaceFragment(new LocateBus(MainActivity.this)); // Load Default Fragment
 
+        bottomNavigationView = findViewById(R.id.bottomNavigationView);
         shareLocationButton = findViewById(R.id.shareLocationButton);
-        shareLocationButton.setOnClickListener(v -> createHeart());
+        speakerButton = findViewById(R.id.speaker_button);
+        reminderButton = findViewById(R.id.reminder_button);
+        titleTextView = findViewById(R.id.toolbarTitle);
 
+        LoginResponse.User user = SecureStorageHelper.getLoginResponse(this).getUser();
+        String userName= user.getName();
+
+        titleTextView.setText("Hey, "+userName);
+
+        setupNavigation(binding);
+        setupSpeakerButton();
+//        setupShareLocationButton();
+        setupLogoutButton();
+        setupReminderButton();
+    }
+
+    private void setupNavigation(ActivityMainBinding binding) {
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.account) {
-                ProfileSheet pf = new ProfileSheet();
-                pf.show(getSupportFragmentManager(), pf.getTag());
-            } else if (itemId == R.id.about) {
-                AboutSheet as = new AboutSheet();
-                as.show(getSupportFragmentManager(), as.getTag());
+            if (item.getItemId() == R.id.account) {
+                new ProfileSheet().show(getSupportFragmentManager(), null);
+            } else if (item.getItemId() == R.id.about) {
+                new AboutSheet().show(getSupportFragmentManager(), null);
             }
             return true;
         });
+    }
 
-        Button logoutButton = findViewById(R.id.logoutButton);
-        logoutButton.setOnClickListener(v -> {
+    private void setupSpeakerButton() {
+        speakerButton.setOnClickListener(v -> {
+            isSpeakerOn = !isSpeakerOn;
+            speakerButton.setImageResource(isSpeakerOn ? R.drawable.volume_up_24px : R.drawable.volume_off_24px);
+        });
+    }
+
+    private void setupReminderButton() {
+        reminderButton.setOnClickListener(v -> {
+            showBusSelectionDialog();
+        });
+    }
+
+    private void setupShareLocationButton() {
+        shareLocationButton.setOnClickListener(v -> createHeart());
+    }
+
+    private void setupLogoutButton() {
+        findViewById(R.id.logoutButton).setOnClickListener(v -> {
             SecureStorageHelper.clearAllData(getApplicationContext());
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();
         });
+    }
+
+    private void showBusSelectionDialog() {
+        // Initialize the list of reminder times
+        reminderMeterList = new ArrayList<>();
+        reminderMeterList.add(100);
+        reminderMeterList.add(500);
+        reminderMeterList.add(1000);
+        reminderMeterList.add(2000);
+        reminderMeterList.add(3000);
+
+        // Convert the list to a string array for the dialog
+        String[] reminderNames = new String[reminderMeterList.size()];
+        int checkedItem = 0;
+        for (int i = 0; i < reminderMeterList.size(); i++) {
+            reminderNames[i] = reminderMeterList.get(i) + " Meter"; // Add a unit or just convert to string
+            if (reminderMeterList.get(i) == Constants.getReminderMeter()) {
+                checkedItem = i;
+            }
+        }
+
+        AtomicInteger selectedMeterReminder = new AtomicInteger();
+
+        // Show the dialog
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Remind Me when bus is :")
+                .setSingleChoiceItems(reminderNames, checkedItem, (dialog, which) -> {
+                    selectedMeterReminder.set(reminderMeterList.get(which)); // Get selected value
+                })
+                .setPositiveButton("OK", (dialog, which) ->{
+                    if (selectedMeterReminder.doubleValue()>0){
+                        Constants.setReminderMeter(selectedMeterReminder.get());
+                        Toast.makeText(this, "I will remind you when bus is : " + selectedMeterReminder + " Meter close to you.", Toast.LENGTH_SHORT).show();
+                    }
+                    dialog.dismiss();
+
+                }).show();
     }
 
 
@@ -143,96 +240,54 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.replace(R.id.main_fragment_container, fragment);
         fragmentTransaction.commit();
     }
+
     public void createHeart() {
         long currentTime = System.currentTimeMillis();
-        if (currentTime - lastClickTime < 300) { // Prevent clicks faster than 300ms
-            return;
-        }
+        if (currentTime - lastClickTime < 300) return; // Debounce clicks
         lastClickTime = currentTime;
 
-        // Get reference to the root layout
         CoordinatorLayout rootLayout = findViewById(R.id.root_layout);
         if (rootLayout == null) {
-            Log.e("MainActivity", "Root layout is null!");
+            Log.e(TAG, "Root layout is null!");
             return;
         }
 
-        // Create a new ShapeableImageView
         ShapeableImageView heartImageView = new ShapeableImageView(this);
-
-        // Set layout parameters for the ShapeableImageView
-        CoordinatorLayout.LayoutParams params = new CoordinatorLayout.LayoutParams(
-                dpToPx(40), // width in pixels
-                dpToPx(40)  // height in pixels
-        );
-
-        // Random left or right margin
+        CoordinatorLayout.LayoutParams params = new CoordinatorLayout.LayoutParams(dpToPx(45), dpToPx(45));
         Random random = new Random();
-        int randomMargin = random.nextInt(dpToPx(100)) - dpToPx(50); // Random margin range: -50dp to +50dp
         params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-        params.setMarginStart(randomMargin); // Apply random margin
-        params.bottomMargin = dpToPx(60); // Margin from the bottom
-
-        // Apply layout parameters
+        params.setMarginStart(random.nextInt(dpToPx(100)) - dpToPx(50));
+        params.bottomMargin = dpToPx(65);
         heartImageView.setLayoutParams(params);
-
-        // Randomly select an image from the IMAGE_RESOURCES array
-        int randomImageRes = IMAGE_RESOURCES[random.nextInt(IMAGE_RESOURCES.length)];
-        // Set the image resource
-        heartImageView.setImageResource(randomImageRes);
-
-        // Add the ShapeableImageView to the parent layout
+        heartImageView.setImageResource(IMAGE_RESOURCES[random.nextInt(IMAGE_RESOURCES.length)]);
         rootLayout.addView(heartImageView);
 
-        // Create animation set
         AnimationSet animationSet = new AnimationSet(true);
-
-        // Translate animation: Move upward
-        TranslateAnimation translateAnimation = new TranslateAnimation(
-                0, 0,  // From XDelta, To XDelta
-                0, -dpToPx(400) // From YDelta, To YDelta
-        );
-        translateAnimation.setDuration(2000);
-
-        // Alpha animation: Fade out
+        TranslateAnimation translateAnimation = new TranslateAnimation(0, 0, 0, -dpToPx(400));
         AlphaAnimation alphaAnimation = new AlphaAnimation(1.0f, 0.0f);
+        translateAnimation.setDuration(2000);
         alphaAnimation.setDuration(2000);
-
-        // Add animations to the set
         animationSet.addAnimation(translateAnimation);
         animationSet.addAnimation(alphaAnimation);
 
-        // Set an animation listener to remove the view after animation
         animationSet.setAnimationListener(new Animation.AnimationListener() {
             @Override
-            public void onAnimationStart(Animation animation) {}
-
-            @Override
             public void onAnimationEnd(Animation animation) {
-                // Use Handler to remove the ImageView safely
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Ensure the view is still in the layout before removing
-                        if (heartImageView.getParent() != null) {
-                            rootLayout.removeView(heartImageView);
-                        }
-                    }
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    if (heartImageView.getParent() != null) rootLayout.removeView(heartImageView);
                 });
             }
 
             @Override
+            public void onAnimationStart(Animation animation) {}
+            @Override
             public void onAnimationRepeat(Animation animation) {}
         });
 
-        // Start the animation
         heartImageView.startAnimation(animationSet);
     }
 
-
-    // Helper method to convert dp to pixels
     private int dpToPx(int dp) {
         return (int) (dp * getResources().getDisplayMetrics().density);
     }
-
 }

@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">BsTrack</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="app_name">Present Sir</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="maptiler_style_url">https://api.maptiler.com/maps/streets-v2-light/style.json?key=shkhjV0blbHnjBaFvn14</string>
     <string name="maptiler_api_key">shkhjV0blbHnjBaFvn14</string>

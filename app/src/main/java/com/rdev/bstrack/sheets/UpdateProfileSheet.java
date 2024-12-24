@@ -14,6 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.rdev.bstrack.R;
 import com.rdev.bstrack.helpers.ApiClient;
 import com.rdev.bstrack.helpers.SecureStorageHelper;
+import com.rdev.bstrack.interfaces.ApiService;
 import com.rdev.bstrack.interfaces.AuthService;
 import com.rdev.bstrack.modals.LoginResponse;
 import com.rdev.bstrack.modals.RequestBody;
@@ -89,14 +90,14 @@ public class UpdateProfileSheet extends BottomSheetDialogFragment {
         }
 
         User newUserData = new User(user.getEmail(), password, name, contact, selectedGender);
-        String busId = String.valueOf(user.getBus());
+        String busId = String.valueOf(user.getBus().getBusId());
         RequestBody requestBody = new RequestBody(newUserData, busId);
 
 //        ProgressBar progressBar = profileSheet.findViewById(R.id.progressBar);
 //        progressBar.setVisibility(View.VISIBLE);
 
-        AuthService authService = ApiClient.getClient().create(AuthService.class);
-        Call<Void> call = authService.registerUser(requestBody);
+        ApiService authService = ApiClient.getClient().create(ApiService.class);
+        Call<Void> call = authService.updateUser(requestBody);
 
         call.enqueue(new Callback<Void>() {
             @Override

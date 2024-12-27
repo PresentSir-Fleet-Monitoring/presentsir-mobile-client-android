@@ -33,8 +33,8 @@ public class SplashActivity extends AppCompatActivity {
 
         // Start loading constants and transition after some time
         loadConstantsAndInitializeApp();
-//        AppConfig appConfig = new AppConfig();
-//        appConfig.loadConstants();
+
+        new AppConfig().loadConstants();
 
     }
 

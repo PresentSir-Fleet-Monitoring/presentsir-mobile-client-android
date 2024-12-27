@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         MapmyIndiaAccountManager.getInstance().setRestAPIKey(Constants.getMapMyIndiaApiKey());
         MapmyIndiaAccountManager.getInstance().setMapSDKKey(Constants.getMapMyIndiaApiKey());
         MapmyIndiaAccountManager.getInstance().setAtlasClientId(Constants.getMapMyIndiaClientId());
-        MapmyIndiaAccountManager.getInstance().setAtlasClientSecret(Constants.getMapMyIndiaClientSercret());
+        MapmyIndiaAccountManager.getInstance().setAtlasClientSecret(Constants.getMapMyIndiaClientSecret());
         MapmyIndia.getInstance(getApplicationContext());
     }
 

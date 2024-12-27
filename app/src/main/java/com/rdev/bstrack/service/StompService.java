@@ -30,7 +30,7 @@ import ua.naiksoftware.stomp.Stomp;
 import ua.naiksoftware.stomp.StompClient;
 import ua.naiksoftware.stomp.dto.StompHeader;
 
-public class StompService {
+public class StompService  {
     private static final String TAG = "StompService";
     private Disposable locationIntervalDisposable;
     private Disposable dispLifecycle;

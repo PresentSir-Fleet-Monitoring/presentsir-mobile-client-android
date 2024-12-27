@@ -163,11 +163,18 @@ public class MapService implements OnMapReadyCallback {
 
         if (currentDistance <= selectedReminderDistanceKm) {
 
-            ttsHelper.speak(
-                    "The bus is " + String.format("%.2f", currentDistance) + " kilometers away and will arrive in " +
-                            (int) etaMinutes + " minutes.",
-                    MainActivity.isSpeakerOn
-            );
+            if (etaMinutes<1){
+                ttsHelper.speak(
+                        "The bus is " + String.format("%.2f", currentDistance) + " kilometers away and will arrive in few minutes.",
+                        MainActivity.isSpeakerOn
+                );
+            }else {
+                ttsHelper.speak(
+                        "The bus is " + String.format("%.2f", currentDistance) + " kilometers away and will arrive in " +
+                                (int) etaMinutes + " minutes.",
+                        MainActivity.isSpeakerOn
+                );
+            }
         }
 
     }

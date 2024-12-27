@@ -49,7 +49,7 @@
             android:resource="@array/preloaded_fonts" />
         <meta-data
             android:name="com.onesignal.NotificationIcon"
-            android:resource="@drawable/location" />
+            android:resource="@mipmap/ic_launcher" />
         <meta-data
             android:name="com.onesignal.NotificationAccentColor"
             android:value="#FFFFFF" />

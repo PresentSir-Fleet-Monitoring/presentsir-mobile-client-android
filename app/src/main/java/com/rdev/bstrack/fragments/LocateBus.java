@@ -99,7 +99,7 @@ public class LocateBus extends Fragment  {
 
 
         System.out.println(loginResponse);
-        if (Objects.equals(role, "ROLE_USER")){
+        if (Objects.equals(role, "ROLE_ADMIN")){
             allBusButton.setVisibility(View.VISIBLE);
         }else {
             allBusButton.setVisibility(View.INVISIBLE);

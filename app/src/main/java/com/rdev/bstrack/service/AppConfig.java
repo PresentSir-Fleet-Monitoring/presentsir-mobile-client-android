@@ -64,6 +64,9 @@ public class AppConfig {
                         if (jsonObject.has("buyMeCoffeeButtonVisible")) {
                             Constants.setBuyMeCoffeeButtonVisible(jsonObject.getString("buyMeCoffeeButtonVisible"));
                         }
+                        if (jsonObject.has("shareLocationButtonVisible")) {
+                            Constants.setShareLocationButtonVisible(jsonObject.getString("shareLocationButtonVisible"));
+                        }
                         if (jsonObject.has("developerName")) {
                             Constants.setDeveloperName(jsonObject.getString("developerName"));
                         }

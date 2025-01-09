@@ -18,6 +18,7 @@ public class Constants {
     // App Configuration
     public static int REMINDER_METER = 100;
     public static String buyMeCoffeeButtonVisible = "NO";
+    public static String shareLocationButtonVisible = "NO";
     public static String developerName = "Ranjit";
 
     // Getters and Setters
@@ -27,6 +28,14 @@ public class Constants {
 
     public static void setBuyMeCoffeeButtonVisible(String buyMeCoffeeButtonVisible) {
         Constants.buyMeCoffeeButtonVisible = buyMeCoffeeButtonVisible;
+    }
+
+    public static String getShareLocationButtonVisible() {
+        return shareLocationButtonVisible;
+    }
+
+    public static void setShareLocationButtonVisible(String shareLocationButtonVisible) {
+        Constants.shareLocationButtonVisible = shareLocationButtonVisible;
     }
 
     public static String getDeveloperName() {

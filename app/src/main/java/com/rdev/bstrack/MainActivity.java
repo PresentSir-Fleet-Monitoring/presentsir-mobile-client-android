@@ -1,11 +1,13 @@
 package com.rdev.bstrack;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -17,8 +19,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -27,6 +33,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.navigation.NavigationView;
 import com.mapmyindia.sdk.maps.MapmyIndia;
 import com.mmi.services.account.MapmyIndiaAccountManager;
 import com.onesignal.OneSignal;
@@ -41,10 +48,11 @@ import com.rdev.bstrack.sheets.ProfileSheet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
     private static final String TAG = "MainActivity";
     private static final int PERMISSION_REQUEST_LOCATION = 1001;
     private static final int[] IMAGE_RESOURCES = {
@@ -56,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
             R.drawable.red_heart
     };
 
+    private DrawerLayout drawerLayout;
     private List<Integer> reminderMeterList;
     private BottomNavigationView bottomNavigationView;
     private FloatingActionButton shareLocationButton;
@@ -65,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
     private long lastClickTime = 0;
 
     public static boolean isSpeakerOn = true;
+    private Dialog logoutConfirmDialog;
+    private Toolbar logoutConfirmToolbar;
 
     public FloatingActionButton getShareLocationButton(){
         return shareLocationButton;
@@ -142,9 +153,13 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         shareLocationButton = findViewById(R.id.shareLocationButton);
+        drawerLayout = findViewById(R.id.drawer_layout);
         speakerButton = findViewById(R.id.speaker_button);
         reminderButton = findViewById(R.id.reminder_button);
         titleTextView = findViewById(R.id.toolbarTitle);
+
+//        NavigationView navigationView = findViewById(R.id.nav_view);
+//        navigationView.setNavigationItemSelectedListener(this); This feature implemented future
 
         LoginResponse.User user = SecureStorageHelper.getLoginResponse(this).getUser();
         String userName= user.getName();
@@ -153,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
 
         setupNavigation(binding);
         setupSpeakerButton();
-//        setupShareLocationButton();
+        setupShareLocationButton();
         setupLogoutButton();
         setupReminderButton();
     }
@@ -183,16 +198,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupShareLocationButton() {
-        shareLocationButton.setOnClickListener(v -> createHeart());
+        if (Objects.equals(Constants.getShareLocationButtonVisible(), "YES")){
+            shareLocationButton.setVisibility(View.VISIBLE);
+        }else {
+            shareLocationButton.setVisibility(View.INVISIBLE);
+        }
+//        shareLocationButton.setOnClickListener(v -> createHeart());
     }
 
     private void setupLogoutButton() {
         findViewById(R.id.logoutButton).setOnClickListener(v -> {
-            SecureStorageHelper.clearAllData(getApplicationContext());
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
+//            SecureStorageHelper.clearAllData(getApplicationContext());
+//            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+//            startActivity(intent);
+//            finish();
+            showConfirmLogoutDialog();
         });
     }
 
@@ -233,6 +254,19 @@ public class MainActivity extends AppCompatActivity {
                 }).show();
     }
 
+    private void showConfirmLogoutDialog(){
+        // Show the dialog
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Confirm Logout..")
+                .setPositiveButton("Continue", (dialog, which) ->{
+                    SecureStorageHelper.clearAllData(getApplicationContext());
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                    dialog.dismiss();
+                }).show();
+    }
 
     private void replaceFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -289,5 +323,28 @@ public class MainActivity extends AppCompatActivity {
 
     private int dpToPx(int dp) {
         return (int) (dp * getResources().getDisplayMetrics().density);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        int id = menuItem.getItemId();
+
+        if (id == R.id.logout) {
+            showConfirmLogoutDialog();
+        } else if (id == R.id.nav_home) {
+            // Handle the profile action
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.END);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.END)) {
+            drawerLayout.closeDrawer(GravityCompat.END);
+        } else {
+            super.onBackPressed();
+        }
     }
 }

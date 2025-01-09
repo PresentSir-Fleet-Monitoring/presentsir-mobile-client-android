@@ -37,8 +37,8 @@
 
                 <ImageView
                     android:id="@+id/app_logo"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
                     android:layout_centerVertical="true"
                     android:layout_alignParentStart="true"
                     android:src="@drawable/location"
@@ -145,4 +145,15 @@
             app:layout_anchor="@id/bottom_app_bar" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+<!--    <com.google.android.material.navigation.NavigationView-->
+<!--        android:id="@+id/nav_view"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:layout_gravity="start"-->
+<!--        app:headerLayout="@layout/nav_header"-->
+<!--        app:menu="@menu/drawer_menu"-->
+<!--        app:itemIconTint="?attr/colorOnSurface"-->
+<!--        app:itemTextColor="?attr/colorOnSurface" />-->
+
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:networkSecurityConfig="@xml/network_security_config"
@@ -23,6 +24,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BsTrack"
         tools:targetApi="31">
+        <service
+            android:name=".service.StompService"
+            android:exported="false" />
         <meta-data
             android:name="com.mapmyindia.sdk.API_KEY"
             android:value="3ec46d49ebb7fb8f074ed19cc8c82a46"/>

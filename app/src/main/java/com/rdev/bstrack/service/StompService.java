@@ -1,10 +1,19 @@
 package com.rdev.bstrack.service;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.os.Build;
+import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.core.app.NotificationCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
@@ -30,7 +39,7 @@ import ua.naiksoftware.stomp.Stomp;
 import ua.naiksoftware.stomp.StompClient;
 import ua.naiksoftware.stomp.dto.StompHeader;
 
-public class StompService  {
+public class StompService extends Service {
     private static final String TAG = "StompService";
     private Disposable locationIntervalDisposable;
     private Disposable dispLifecycle;
@@ -41,9 +50,8 @@ public class StompService  {
     private FloatingActionButton userLocationButton;
 
     // Flags
-    private Boolean isSendLocationButtonOn =false;
-    private Boolean isReceiveLocationButtonOn =false;
-
+    private Boolean isSendLocationButtonOn = false;
+    private Boolean isReceiveLocationButtonOn = false;
 
     private TextToSpeechHelper ttsHelper;
     private StompClient mStompClient;
@@ -53,7 +61,10 @@ public class StompService  {
     private Context context;
     private MainActivity mainActivity;
 
-    public StompService(Context context, String email,String busId, String authToken, MainActivity mainActivity,MapService mapService,FloatingActionButton busLocationButton,FloatingActionButton userLocationButton) {
+    public StompService() {
+    }
+
+    public StompService(Context context, String email, String busId, String authToken, MainActivity mainActivity, MapService mapService, FloatingActionButton busLocationButton, FloatingActionButton userLocationButton) {
         this.USER_EMAIL = email;
         this.BUS_ID = busId;
         this.AUTH_TOKEN = authToken;
@@ -72,13 +83,23 @@ public class StompService  {
         resetSubscriptions();
 
     }
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        compositeDisposable = new CompositeDisposable();
+        mStompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, Constants.getWebsocketUrl());
+        resetSubscriptions();
+        Log.d(TAG, "StompService created.");
+    }
 
-    // STOMP CONNECTION METHOD
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+
+        return START_STICKY;
+    }
 
     public void connectStomp(List<StompHeader> headers) {
-
         mStompClient.withClientHeartbeat(7000).withServerHeartbeat(1000);
-
         resetSubscriptions();
 
         dispLifecycle = mStompClient.lifecycle()
@@ -87,7 +108,7 @@ public class StompService  {
                 .subscribe(lifecycleEvent -> {
                     switch (lifecycleEvent.getType()) {
                         case OPENED:
-                            ttsHelper.speak("You Are Connected",MainActivity.isSpeakerOn);
+                            ttsHelper.speak("You are connected", MainActivity.isSpeakerOn);
                             break;
                         case ERROR:
                             Log.e(TAG, "Server connection error", lifecycleEvent.getException());
@@ -95,9 +116,9 @@ public class StompService  {
                             break;
                         case CLOSED:
                             toast("Stomp connection closed");
-                            ttsHelper.speak("You Are Disconnected",MainActivity.isSpeakerOn);
-                            this.busLocationButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFFFFF")));
                             mainActivity.getShareLocationButton().setImageResource(R.drawable.red_heart);
+                            this.busLocationButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFFFFF")));
+                            ttsHelper.speak("You are disconnected", MainActivity.isSpeakerOn);
                             resetSubscriptions();
                             break;
                         case FAILED_SERVER_HEARTBEAT:
@@ -107,18 +128,11 @@ public class StompService  {
                 });
 
         compositeDisposable.add(dispLifecycle);
-
         mStompClient.connect(headers);
     }
 
-
-    // SEND LOCATION METHOD
-
     public void sendLocation() {
-
         if (isSendLocationButtonOn) {
-            // Toggle off: Disconnect and stop sending location
-            mainActivity.getShareLocationButton().setImageResource(R.drawable.red_heart);
             isSendLocationButtonOn = false;
 
             if (locationIntervalDisposable != null && !locationIntervalDisposable.isDisposed()) {
@@ -127,41 +141,41 @@ public class StompService  {
 
             if (mStompClient.isConnected()) {
                 mStompClient.disconnect();
+                mainActivity.getShareLocationButton().setImageResource(R.drawable.red_heart);
                 Log.d(TAG, "Disconnected STOMP client.");
             }
 
-            ttsHelper.speak("Disconnected.",MainActivity.isSpeakerOn);
+            mainActivity.getShareLocationButton().setImageResource(R.drawable.red_heart);
+            ttsHelper.speak("Disconnected.", MainActivity.isSpeakerOn);
             toast("Location sharing stopped.");
+
         } else {
-            // Toggle on: Start sending location with new connection and headers
             isSendLocationButtonOn = true;
 
-            // Disconnect if an existing connection is alive
             if (mStompClient.isConnected()) {
                 mStompClient.disconnect();
                 Log.d(TAG, "Existing connection disconnected before reconnecting.");
             }
 
-            // Initialize STOMP client with new headers
             List<StompHeader> connectHeaders = new ArrayList<>();
-            connectHeaders.add(new StompHeader("Authorization", "Bearer "+AUTH_TOKEN));
+            connectHeaders.add(new StompHeader("Authorization", "Bearer " + AUTH_TOKEN));
             connectHeaders.add(new StompHeader("email", USER_EMAIL));
             connectHeaders.add(new StompHeader("busId", BUS_ID));
             connectHeaders.add(new StompHeader("iam", "sender"));
 
             mStompClient.connect(connectHeaders);
 
-            // Start sending location every 5 seconds
             mainActivity.getShareLocationButton().setImageResource(R.drawable.black_heart);
+            busLocationButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFFFFF")));
+
+            // Start sending location every 5 seconds
 
             locationIntervalDisposable = Observable.interval(0, 5, TimeUnit.SECONDS)
-                    .subscribeOn(Schedulers.io()) // Runs on IO thread
-                    .observeOn(AndroidSchedulers.mainThread()) // Switch to main thread before UI updates
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(tick -> {
-                        // Fetch user's latest location
                         LatLng updatedLatLng = mapService.getUserLocation();
 
-                        // Create the updated location object
                         LocationData updatedLocation = new LocationData(
                                 USER_EMAIL,
                                 BUS_ID,
@@ -169,105 +183,66 @@ public class StompService  {
                                 updatedLatLng.getLongitude()
                         );
 
-                        // Convert location data to JSON
                         String payload = new Gson().toJson(updatedLocation);
 
-                        // Send payload using STOMP client
                         mStompClient.send("/app/location", payload)
                                 .subscribe(() -> {
-                                    // This runs on the main thread due to `observeOn`
-                                    Log.d(TAG, "Location sent successfully: " + payload);
-                                    mainActivity.runOnUiThread(() -> {
-                                        mainActivity.createHeart();  // This method will now be safely called on the main thread
-                                    });
-                                }, throwable -> {
-                                    // Handle errors safely
-                                    Log.e(TAG, "Error sending location", throwable);
-                                    ttsHelper.speak("Error sending location.",MainActivity.isSpeakerOn);
-                                    mainActivity.runOnUiThread(() -> {
-                                        mainActivity.getShareLocationButton().setImageResource(R.drawable.red_heart);
-                                    });
-                                });
+                                            Log.d(TAG, "Location sent successfully: " + payload);
+                                                    mainActivity.runOnUiThread(() -> {
+                                                        mainActivity.createHeart();  // This method will now be safely called on the main thread
+                                                    });
+                                        },
+                                        throwable -> Log.e(TAG, "Error sending location", throwable));
                     }, throwable -> {
-                        // Global error handling for Observable
-                        Timber.tag(TAG).e(throwable, "Unhandled error in interval observable");
+                                mainActivity.runOnUiThread(() -> {
+                                                mainActivity.getShareLocationButton().setImageResource(R.drawable.red_heart);
+                                });
+                        Log.e(TAG, "Unhandled error in interval observable", throwable);
                     });
-
+            mainActivity.getShareLocationButton().setImageResource(R.drawable.black_heart);
             toast("Location sharing started.");
-            ttsHelper.speak("Location sharing started.",MainActivity.isSpeakerOn);
+            ttsHelper.speak("Location sharing started.", MainActivity.isSpeakerOn);
         }
     }
 
-
-    // GET BUS LOCATION
-
     public void getBusLocation(String busId) {
-        // Initialize STOMP client with new headers
         List<StompHeader> connectHeaders = new ArrayList<>();
-        connectHeaders.add(new StompHeader("Authorization", "Bearer "+AUTH_TOKEN));
+        connectHeaders.add(new StompHeader("Authorization", "Bearer " + AUTH_TOKEN));
         connectHeaders.add(new StompHeader("email", USER_EMAIL));
         connectHeaders.add(new StompHeader("busId", BUS_ID));
-        connectHeaders.add(new StompHeader("iam", "reciver"));
+        connectHeaders.add(new StompHeader("iam", "receiver"));
 
         mStompClient.connect(connectHeaders);
 
         if (isReceiveLocationButtonOn) {
-            // Toggle off: Disconnect and reset UI
             isReceiveLocationButtonOn = false;
             mStompClient.disconnect();
-            ttsHelper.speak("Disconnected from bus location updates.",MainActivity.isSpeakerOn);
             this.busLocationButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFFFFF")));
+            ttsHelper.speak("Disconnected from bus location updates.", MainActivity.isSpeakerOn);
         } else {
-            // Toggle on: Connect and subscribe with receiver headers
             isReceiveLocationButtonOn = true;
 
-            // Define headers for receiving (subscriber headers)
             List<StompHeader> receiveHeaders = new ArrayList<>();
-            receiveHeaders.add(new StompHeader("Authorization", "Bearer "+AUTH_TOKEN));
+            receiveHeaders.add(new StompHeader("Authorization", "Bearer " + AUTH_TOKEN));
             receiveHeaders.add(new StompHeader("email", USER_EMAIL));
             receiveHeaders.add(new StompHeader("busId", busId));
             receiveHeaders.add(new StompHeader("iam", "receiver"));
 
-            this.busLocationButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFC0CB")));
-            ttsHelper.speak("Connected to bus",true);
-
-            // Subscribe to the bus location topic
             Disposable dispTopic = mStompClient.topic("/topic/location/" + busId, receiveHeaders)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(topicMessage -> {
                         String payload = topicMessage.getPayload();
-                        Gson gson = new Gson();
-                        LocationData locationData = gson.fromJson(payload, LocationData.class);
-                        Timber.tag(TAG).d("Received: " + locationData.toString());
+                        LocationData locationData = new Gson().fromJson(payload, LocationData.class);
                         mapService.showBusLocationOnMap(locationData.getLatitude(), locationData.getLongitude());
-                    }, throwable -> {
-                        Timber.tag(TAG).e(throwable, "Error on subscribe topic");
-                        ttsHelper.speak("No location available. Waiting for client...",MainActivity.isSpeakerOn);
-                        mainActivity.runOnUiThread(() -> {
-                            this.busLocationButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFFFFF")));
-                        });
-                        toast("Error: " + throwable.getMessage());
-                    });
+                    }, throwable -> Log.e(TAG, "Error on subscribe topic", throwable));
 
-            // Add subscription to composite disposable
+            this.busLocationButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FFC0CB")));
+            mainActivity.getShareLocationButton().setImageResource(R.drawable.red_heart);
             compositeDisposable.add(dispTopic);
         }
     }
 
-
-
-    private LatLng getUserLocation() {
-        return mapService.getUserLocation();
-    }
-
-
-    protected CompletableTransformer applySchedulers() {
-        return upstream -> upstream
-                .unsubscribeOn(Schedulers.newThread())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
-    }
     public void resetSubscriptions() {
         if (compositeDisposable != null) {
             compositeDisposable.dispose();
@@ -278,6 +253,24 @@ public class StompService  {
     private void toast(String text) {
         Timber.tag(TAG).i(text);
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mStompClient != null) {
+            mStompClient.disconnect();
+        }
+        if (compositeDisposable != null) {
+            compositeDisposable.dispose();
+        }
+        ttsHelper.stopTTS();
+        Log.d(TAG, "StompService destroyed.");
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null; // This is not a bound service
     }
 
 }

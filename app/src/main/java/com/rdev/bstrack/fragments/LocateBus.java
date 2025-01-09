@@ -1,6 +1,7 @@
 package com.rdev.bstrack.fragments;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -131,6 +132,10 @@ public class LocateBus extends Fragment  {
                 userLocationButton
         );
 
+        // Prepare Intent with data
+        Intent stompServiceIntent = new Intent(getContext(), StompService.class);
+        // Start the service
+        getContext().startService(stompServiceIntent);
 
         stompService.resetSubscriptions();
 

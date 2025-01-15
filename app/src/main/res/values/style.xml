@@ -19,7 +19,7 @@
         <item name="rippleColor">@color/common_google_signin_btn_text_dark</item>
 
         <!-- Optional: Customize the shape -->
-        <item name="shapeAppearance">@style/CustomFABShape</item>
+        <item name="shapeAppearance">@drawable/fab_gradient_background</item>
     </style>
 
     <!-- Custom FAB Shape -->

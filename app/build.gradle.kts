@@ -38,22 +38,36 @@ android {
 }
 
 dependencies {
-    implementation(libs.appcompat)
-    implementation(libs.material)
+    implementation(libs.appcompat)  // Ensure this is the AndroidX version
+    implementation(libs.material)  // Keep only this line for material components
     implementation(libs.activity)
     implementation(libs.constraintlayout)
-    implementation("com.google.android.gms:play-services-maps:18.0.2")
-    implementation("com.google.android.gms:play-services-location:21.0.1")
-    implementation("org.maplibre.gl:android-sdk:10.0.2")
-    implementation("com.google.android.material:material:1.3.0-alpha03")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation("com.onesignal:OneSignal:[4.0.0, 4.99.99]") // OneSignal SDK
 
+    implementation("com.google.android.gms:play-services-location:18.0.0")
+
+    implementation("com.github.NaikSoftware:StompProtocolAndroid:1.6.6")
+
+
+
+    // OneSignal SDK with exclusion of legacy support-compat
+    implementation("com.onesignal:OneSignal:[4.0.0, 4.99.99]") {
+        exclude(group = "com.android.support", module = "support-compat")
+    }
+
+    // Make sure MapMyIndia SDK is AndroidX compatible
+    implementation("com.mapmyindia.sdk:mapmyindia-android-sdk:7.0.3") {
+        exclude(group = "com.android.support", module = "support-compat")
+    }
+
+
+
+    // Add more exclusions if needed for other libraries
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

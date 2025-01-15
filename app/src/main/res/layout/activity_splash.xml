@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fff">  <!-- Optional: Add a background image or color -->
+
+    <!-- Optional: You can add a logo, text, or animation here -->
+    <!-- Your app logo -->
+    <ImageView
+        android:id="@+id/splash_logo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:src="@drawable/trip_four" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        style="@style/MaterialAlertDialog.Material3.Title.Text"
+        android:fontFamily="@font/poppins_medium"
+        android:layout_marginBottom="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:textSize="35dp"
+        android:textColor="@color/cardview_dark_background"
+        android:layout_marginTop="30dp"/>
+
+</RelativeLayout>

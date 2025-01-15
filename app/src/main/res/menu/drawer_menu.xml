@@ -5,4 +5,9 @@
         android:icon="@drawable/ic_home"
         android:title="Home" />
 
+    <item
+        android:id="@+id/logout"
+        android:icon="@drawable/logout_24px"
+        android:title="Logout" />
+
 </menu>

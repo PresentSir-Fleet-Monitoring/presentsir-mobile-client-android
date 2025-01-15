@@ -16,6 +16,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven("https://maven.mapmyindia.com/repository/mapmyindia/") // Add MapmyIndia repository
+        maven("https://jitpack.io") // Add MapmyIndia repository
     }
 }
 

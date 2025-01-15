@@ -49,7 +49,10 @@
         <item name="colorSurfaceContainerHigh">@color/md_theme_surfaceContainerHigh</item>
         <item name="colorSurfaceContainerHighest">@color/md_theme_surfaceContainerHighest</item>
 <!--        <item name="bottomSheetDialogTheme">@style/ModalBottomSheetDialog</item>-->
-
+        <item name="boxBackgroundColor">@style/ModalBottomSheetDialog</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
     </style>
 
     <style name="Theme.BsTrack" parent="Base.Theme.BsTrack" />
@@ -66,4 +69,18 @@
 <!--        <item name="bottomSheetStyle">@style/ModalBottomSheet</item>-->
 <!--    </style>-->
 
+    <style name="ModalBottomSheetDialog" parent="Widget.Material3.BottomSheet.Modal">
+        <!-- Custom Behavior Attributes -->
+                <item name="behavior_skipCollapsed">false</item>
+                <item name="behavior_hideable">false</item>
+        <item name="shapeAppearanceOverlay">@style/CustomShapeAppearanceBottomSheetDialog</item>
+    </style>
+
+    <style name="CustomShapeAppearanceBottomSheetDialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopRight">5dp</item>
+        <item name="cornerSizeTopLeft">5dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+    </style>
 </resources>

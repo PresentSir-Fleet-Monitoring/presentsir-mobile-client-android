@@ -1,3 +1,8 @@
+<!-- res/drawable/fab_gradient_background.xml -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <corners android:radius="16dp" /> <!-- Corner Radius -->
+    <gradient
+        android:endColor="#FFFF"
+        android:startColor="#03A9F4"
+        android:angle="75" />           <!-- Gradient direction -->
+    <corners android:radius="25dp" />  <!-- Optional: Rounded corners -->
 </shape>

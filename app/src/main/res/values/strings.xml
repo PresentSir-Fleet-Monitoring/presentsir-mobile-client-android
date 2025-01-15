@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">BsTrack</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="app_name">PresentSir</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="maptiler_style_url">https://api.maptiler.com/maps/streets-v2-light/style.json?key=shkhjV0blbHnjBaFvn14</string>
     <string name="maptiler_api_key">shkhjV0blbHnjBaFvn14</string>
@@ -25,4 +24,5 @@
     <string name="DataSharing">&#9679;<b> Data Sharing :</b> Your personal data is never shared publicly or with third parties.</string>
     <string name="WhoWeAre">PresentSir is an independent initiative developed by <b>Ranjit.</b> This app is not affiliated with any college or institution. Our goal is to create a dependable platform that enhances the commuting experience for everyone.</string>
     <string name="NeedHelp">If you have any questions, feedback, or suggestions, feel free to reach out to us at 7499491002. We’re here to help! Together, let’s make bus commuting smarter and more reliable!</string>
+    <string name="ranjit_email">patilranjit485@gmail.com</string>
 </resources>

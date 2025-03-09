@@ -3,7 +3,7 @@ name: Build and Release APK
 on:
   push:
     branches:
-      - main  # Triggers when merging into `main`
+      - master # Triggers when merging into `main`
 
 jobs:
   build:

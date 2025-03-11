@@ -197,6 +197,7 @@
         android:textAlignment="center"
         android:layout_alignParentBottom="true"
         android:text="@string/ranjit"
+        android:visibility="gone"
         style="@style/TextAppearance.Material3.BodyMedium"
         android:textStyle="bold" />
 </RelativeLayout>

@@ -2,16 +2,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#fff">  <!-- Optional: Add a background image or color -->
+    android:background="#fff">
 
-    <!-- Optional: You can add a logo, text, or animation here -->
-    <!-- Your app logo -->
+
     <ImageView
         android:id="@+id/splash_logo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="15dp"
-        android:src="@drawable/trip_four" />
+        android:layout_margin="25dp"
+        android:src="@drawable/location" />
 
     <TextView
         android:layout_width="wrap_content"

@@ -165,12 +165,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         LoginResponse.User user = SecureStorageHelper.getLoginResponse(this).getUser();
         String userName= user.getName();
+        String userRole = user.getRoles().get(0);
 
         titleTextView.setText("Hey, "+userName);
 
         setupNavigation(binding);
         setupSpeakerButton();
-        setupShareLocationButton();
+        setupShareLocationButton(userRole);
         setupLogoutButton();
         setupReminderButton();
     }
@@ -199,14 +200,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
-    private void setupShareLocationButton() {
-        if (Objects.equals(Constants.getShareLocationButtonVisible(), "YES")){
+    private void setupShareLocationButton(String userRole) {
+        String visibility = "NO";
+
+        switch (userRole.toLowerCase()) {
+            case "user":
+                visibility = Constants.getShareLocationButtonVisibleToUser();
+                break;
+            case "driver":
+                visibility = Constants.getShareLocationButtonVisibleToDriver();
+                break;
+            case "admin":
+                visibility = Constants.getShareLocationButtonVisibleToAdmin();
+                break;
+            case "everyone":
+                visibility = Constants.getShareLocationButtonVisibleToEveryone();
+                break;
+        }
+
+        if ("YES".equalsIgnoreCase(visibility)) {
             shareLocationButton.setVisibility(View.VISIBLE);
-        }else {
+        } else {
             shareLocationButton.setVisibility(View.INVISIBLE);
         }
-//        shareLocationButton.setOnClickListener(v -> createHeart());
+
+        // Optional click handler:
+        // shareLocationButton.setOnClickListener(v -> createHeart());
     }
+
 
     private void setupLogoutButton() {
         findViewById(R.id.logoutButton).setOnClickListener(v -> {

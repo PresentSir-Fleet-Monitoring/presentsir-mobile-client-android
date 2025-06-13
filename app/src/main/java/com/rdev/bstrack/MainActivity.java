@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         String userName= user.getName();
         String userRole = user.getRoles().get(0);
 
-        titleTextView.setText("Hey, "+userName);
+//        titleTextView.setText("Hey, "+userRole);
 
         setupNavigation(binding);
         setupSpeakerButton();
@@ -204,16 +204,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         String visibility = "NO";
 
         switch (userRole.toLowerCase()) {
-            case "user":
+            case "role_user":
                 visibility = Constants.getShareLocationButtonVisibleToUser();
                 break;
-            case "driver":
+            case "role_driver":
                 visibility = Constants.getShareLocationButtonVisibleToDriver();
                 break;
-            case "admin":
+            case "role_admin":
                 visibility = Constants.getShareLocationButtonVisibleToAdmin();
                 break;
-            case "everyone":
+            case "role_everyone":
                 visibility = Constants.getShareLocationButtonVisibleToEveryone();
                 break;
         }

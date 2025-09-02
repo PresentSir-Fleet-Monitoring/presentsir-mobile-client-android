@@ -1,10 +1,15 @@
 package com.rdev.bstrack;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -44,6 +49,7 @@ import com.rdev.bstrack.databinding.ActivityMainBinding;
 import com.rdev.bstrack.fragments.LocateBus;
 import com.rdev.bstrack.helpers.SecureStorageHelper;
 import com.rdev.bstrack.modals.LoginResponse;
+import com.rdev.bstrack.service.StompService;
 import com.rdev.bstrack.sheets.AboutSheet;
 import com.rdev.bstrack.sheets.ProfileSheet;
 
@@ -97,6 +103,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         initializeOneSignal(loginResponse.getUser());
         initializeUI();
         setupWindow();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (!pm.isIgnoringBatteryOptimizations(getPackageName())) {
+                Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                        Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+            }
+        }
 
     }
 
@@ -370,4 +385,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             super.onBackPressed();
         }
     }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(new Intent(this, StompService.class));
+    }
+
 }

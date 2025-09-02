@@ -100,11 +100,7 @@ public class LocateBus extends Fragment  {
 
 
         System.out.println(loginResponse);
-        if (Objects.equals(role, "ROLE_ADMIN")){
-            allBusButton.setVisibility(View.VISIBLE);
-        }else {
-            allBusButton.setVisibility(View.INVISIBLE);
-        }
+        setupAllBusButton(role);
 
         // setting buy_me_coffee visibility default is visible
 
@@ -170,6 +166,29 @@ public class LocateBus extends Fragment  {
 
         return view;
     }
+
+    private void setupAllBusButton(String userRole) {
+        String visibility = "NO";
+
+        switch (userRole.toLowerCase()) {
+            case "role_user":
+                visibility = Constants.getChangeBusButtonVisibleToUser();
+                break;
+            case "role_driver":
+                visibility = Constants.getChangeBusButtonVisibleToDriver();
+                break;
+            case "role_admin":
+                visibility = Constants.getChangeBusButtonVisibleToAdmin();
+                break;
+        }
+
+        if ("YES".equalsIgnoreCase(visibility)) {
+            allBusButton.setVisibility(View.VISIBLE);
+        } else {
+            allBusButton.setVisibility(View.GONE); // better than INVISIBLE
+        }
+    }
+
 
     private void showBusSelectionDialog() {
 

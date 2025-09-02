@@ -5,11 +5,8 @@ import android.util.Log;
 import com.rdev.bstrack.constants.Constants;
 import com.rdev.bstrack.helpers.ApiClient;
 import com.rdev.bstrack.interfaces.ApiService;
-import com.rdev.bstrack.modals.Buses;
 
 import org.json.JSONObject;
-
-import java.util.List;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -18,91 +15,58 @@ import retrofit2.Response;
 
 public class AppConfig {
 
-    private List<Buses> buses;
+    private static final String TAG = "AppConfig";
 
     public void loadConstants() {
         ApiService apiService = ApiClient.getInstance().create(ApiService.class);
 
-        // Make a call
-        Call<ResponseBody> call = apiService.getAppConfig();
-        call.enqueue(new Callback<ResponseBody>() {
+        apiService.getAppConfig().enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    // Inside onResponse, after jsonObject is parsed
                     try {
                         String responseBody = response.body().string();
                         JSONObject jsonObject = new JSONObject(responseBody);
 
-                        if (jsonObject.has("APP_CONFIG_URL"))
-                            Constants.setAppConfigUrl(jsonObject.getString("APP_CONFIG_URL"));
+                        // Use safe get with defaults
+                        Constants.setAppConfigUrl(jsonObject.optString("APP_CONFIG_URL", Constants.APP_CONFIG_URL));
+                        Constants.setServerUrl(jsonObject.optString("SERVER_URL", Constants.SERVER_URL));
+                        Constants.setWebsocketUrl(jsonObject.optString("WEBSOCKET_URL", Constants.WEBSOCKET_URL));
+                        Constants.setOnesignalAppId(jsonObject.optString("ONESIGNAL_APP_ID", Constants.ONESIGNAL_APP_ID));
+                        Constants.setMapMyIndiaApiKey(jsonObject.optString("MAP_MY_INDIA_API_KEY", Constants.MAP_MY_INDIA_API_KEY));
+                        Constants.setMapMyIndiaClientId(jsonObject.optString("MAP_MY_INDIA_CLIENT_ID", Constants.MAP_MY_INDIA_CLIENT_ID));
+                        Constants.setMapMyIndiaClientSecret(jsonObject.optString("MAP_MY_INDIA_CLIENT_SECRET", Constants.MAP_MY_INDIA_CLIENT_SECRET));
+                        Constants.setReminderMeter(jsonObject.optInt("REMINDER_METER", Constants.REMINDER_METER));
 
-                        if (jsonObject.has("SERVER_URL"))
-                            Constants.setServerUrl(jsonObject.getString("SERVER_URL"));
-
-                        if (jsonObject.has("WEBSOCKET_URL"))
-                            Constants.setWebsocketUrl(jsonObject.getString("WEBSOCKET_URL"));
-
-                        if (jsonObject.has("ONESIGNAL_APP_ID"))
-                            Constants.setOnesignalAppId(jsonObject.getString("ONESIGNAL_APP_ID"));
-
-                        if (jsonObject.has("MAP_MY_INDIA_API_KEY"))
-                            Constants.setMapMyIndiaApiKey(jsonObject.getString("MAP_MY_INDIA_API_KEY"));
-
-                        if (jsonObject.has("MAP_MY_INDIA_CLIENT_ID"))
-                            Constants.setMapMyIndiaClientId(jsonObject.getString("MAP_MY_INDIA_CLIENT_ID"));
-
-                        if (jsonObject.has("MAP_MY_INDIA_CLIENT_SECRET"))
-                            Constants.setMapMyIndiaClientSecret(jsonObject.getString("MAP_MY_INDIA_CLIENT_SECRET"));
-
-                        if (jsonObject.has("REMINDER_METER"))
-                            Constants.setReminderMeter(jsonObject.getInt("REMINDER_METER"));
-
-                        if (jsonObject.has("buyMeCoffeeButtonVisible"))
-                            Constants.setBuyMeCoffeeButtonVisible(jsonObject.getString("buyMeCoffeeButtonVisible"));
-
-                        if (jsonObject.has("developerName"))
-                            Constants.setDeveloperName(jsonObject.getString("developerName"));
+                        // UI configs
+                        Constants.setBuyMeCoffeeButtonVisible(jsonObject.optString("buyMeCoffeeButtonVisible", Constants.buyMeCoffeeButtonVisible));
+                        Constants.setDeveloperName(jsonObject.optString("developerName", Constants.developerName));
 
                         // Role-based share location visibility
-                        if (jsonObject.has("shareLocationButtonVisibleToEveryone"))
-                            Constants.setShareLocationButtonVisibleToEveryone(jsonObject.getString("shareLocationButtonVisibleToEveryone"));
-
-                        if (jsonObject.has("shareLocationButtonVisibleToUser"))
-                            Constants.setShareLocationButtonVisibleToUser(jsonObject.getString("shareLocationButtonVisibleToUser"));
-
-                        if (jsonObject.has("shareLocationButtonVisibleToDriver"))
-                            Constants.setShareLocationButtonVisibleToDriver(jsonObject.getString("shareLocationButtonVisibleToDriver"));
-
-                        if (jsonObject.has("shareLocationButtonVisibleToAdmin"))
-                            Constants.setShareLocationButtonVisibleToAdmin(jsonObject.getString("shareLocationButtonVisibleToAdmin"));
+                        Constants.setShareLocationButtonVisibleToEveryone(jsonObject.optString("shareLocationButtonVisibleToEveryone", Constants.shareLocationButtonVisibleToEveryone));
+                        Constants.setShareLocationButtonVisibleToUser(jsonObject.optString("shareLocationButtonVisibleToUser", Constants.shareLocationButtonVisibleToUser));
+                        Constants.setShareLocationButtonVisibleToDriver(jsonObject.optString("shareLocationButtonVisibleToDriver", Constants.shareLocationButtonVisibleToDriver));
+                        Constants.setShareLocationButtonVisibleToAdmin(jsonObject.optString("shareLocationButtonVisibleToAdmin", Constants.shareLocationButtonVisibleToAdmin));
 
                         // Role-based change bus visibility
-                        if (jsonObject.has("changeBusButtonVisibleToEveryone"))
-                            Constants.setChangeBusButtonVisibleToEveryone(jsonObject.getString("changeBusButtonVisibleToEveryone"));
+                        Constants.setChangeBusButtonVisibleToEveryone(jsonObject.optString("changeBusButtonVisibleToEveryone", Constants.changeBusButtonVisibleToEveryone));
+                        Constants.setChangeBusButtonVisibleToUser(jsonObject.optString("changeBusButtonVisibleToUser", Constants.changeBusButtonVisibleToUser));
+                        Constants.setChangeBusButtonVisibleToDriver(jsonObject.optString("changeBusButtonVisibleToDriver", Constants.changeBusButtonVisibleToDriver));
+                        Constants.setChangeBusButtonVisibleToAdmin(jsonObject.optString("changeBusButtonVisibleToAdmin", Constants.changeBusButtonVisibleToAdmin));
 
-                        if (jsonObject.has("changeBusButtonVisibleToUser"))
-                            Constants.setChangeBusButtonVisibleToUser(jsonObject.getString("changeBusButtonVisibleToUser"));
-
-                        if (jsonObject.has("changeBusButtonVisibleToDriver"))
-                            Constants.setChangeBusButtonVisibleToDriver(jsonObject.getString("changeBusButtonVisibleToDriver"));
-
-                        if (jsonObject.has("changeBusButtonVisibleToAdmin"))
-                            Constants.setChangeBusButtonVisibleToAdmin(jsonObject.getString("changeBusButtonVisibleToAdmin"));
-
-                        Log.d("API Response", "Constants updated successfully!");
+                        Log.d(TAG, "Constants updated successfully!");
 
                     } catch (Exception e) {
-                        Log.e("API Error", "Error parsing response body", e);
+                        Log.e(TAG, "Error parsing response body", e);
                     }
                 } else {
-                    Log.e("API Error", "Response failed: " + response.code());
+                    Log.e(TAG, "Response failed: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e("API Failure", "Request failed: " + t.getMessage());
+                Log.e(TAG, "Request failed: " + t.getMessage());
             }
         });
     }

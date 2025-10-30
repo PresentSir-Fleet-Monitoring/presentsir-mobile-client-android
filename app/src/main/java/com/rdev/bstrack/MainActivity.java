@@ -180,9 +180,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         LoginResponse.User user = SecureStorageHelper.getLoginResponse(this).getUser();
         String userName= user.getName();
+        String busID= String.valueOf(user.getBus().getBusId());
         String userRole = user.getRoles().get(0);
 
-//        titleTextView.setText("Hey, "+userRole);
+        titleTextView.setText("BID"+busID);
 
         setupNavigation(binding);
         setupSpeakerButton();

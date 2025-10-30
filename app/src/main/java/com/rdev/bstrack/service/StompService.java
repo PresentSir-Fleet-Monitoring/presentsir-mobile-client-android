@@ -229,7 +229,7 @@ public class StompService extends Service {
         mStompClient.connect(headers);
     }
 
-    public void sendLocation() {
+    public void sendLocation(String busID) {
         if (isSendLocationButtonOn) {
             isSendLocationButtonOn = false;
 
@@ -258,7 +258,7 @@ public class StompService extends Service {
             List<StompHeader> connectHeaders = new ArrayList<>();
             connectHeaders.add(new StompHeader("Authorization", "Bearer " + AUTH_TOKEN));
             connectHeaders.add(new StompHeader("email", USER_EMAIL));
-            connectHeaders.add(new StompHeader("busId", BUS_ID));
+            connectHeaders.add(new StompHeader("busId", busID));
             connectHeaders.add(new StompHeader("iam", "sender"));
 
             mStompClient.connect(connectHeaders);
@@ -283,7 +283,7 @@ public class StompService extends Service {
                         }
                         LocationData updatedLocation = new LocationData(
                                 USER_EMAIL,
-                                BUS_ID,
+                                busID,
                                 lat,
                                 lng
                         );

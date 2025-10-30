@@ -148,7 +148,7 @@ public class LocateBus extends Fragment  {
 
         shareLocationButton.setOnClickListener(v -> {
 //            sendLocation();
-               stompService.sendLocation();
+               stompService.sendLocation(BUS_ID);
         });
 
         // Set click listeners for buttons
@@ -243,6 +243,7 @@ public class LocateBus extends Fragment  {
                     if (selectedBusId.get() >0){
                         Toast.makeText(getContext(), "Selected Bus ID: " + selectedBusId, Toast.LENGTH_SHORT).show();
                         BUS_ID= String.valueOf(selectedBusId);
+                        MainActivity.setTilteText(String.valueOf(selectedBusId));
                     }
                     dialog.dismiss();
                 })

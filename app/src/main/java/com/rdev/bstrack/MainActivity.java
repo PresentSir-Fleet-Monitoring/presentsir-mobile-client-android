@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FloatingActionButton shareLocationButton;
     private ImageView speakerButton;
     private ImageView reminderButton;
-    private TextView titleTextView;
+    private static TextView titleTextView;
     private long lastClickTime = 0;
 
     public static boolean isSpeakerOn = true;
@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void setupReminderButton() {
         reminderButton.setOnClickListener(v -> {
-            showBusSelectionDialog();
+            showReminderSelectionDialog();
         });
     }
 
@@ -243,7 +243,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // shareLocationButton.setOnClickListener(v -> createHeart());
     }
 
-
     private void setupLogoutButton() {
         findViewById(R.id.logoutButton).setOnClickListener(v -> {
 //            SecureStorageHelper.clearAllData(getApplicationContext());
@@ -255,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
-    private void showBusSelectionDialog() {
+    private void showReminderSelectionDialog() {
         // Initialize the list of reminder times
         reminderMeterList = new ArrayList<>();
         reminderMeterList.add(100);
@@ -291,6 +290,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 }).show();
     }
+    public static void setTilteText(String str){
+        titleTextView.setText(str);
+    }
+
 
     private void showConfirmLogoutDialog(){
         // Show the dialog

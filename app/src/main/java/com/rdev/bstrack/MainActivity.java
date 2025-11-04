@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         String busID= String.valueOf(user.getBus().getBusId());
         String userRole = user.getRoles().get(0);
 
-        titleTextView.setText("BID"+busID);
+        titleTextView.setText("BUS ID : "+busID);
 
         setupNavigation(binding);
         setupSpeakerButton();

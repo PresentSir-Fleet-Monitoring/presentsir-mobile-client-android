@@ -243,7 +243,7 @@ public class LocateBus extends Fragment  {
                     if (selectedBusId.get() >0){
                         Toast.makeText(getContext(), "Selected Bus ID: " + selectedBusId, Toast.LENGTH_SHORT).show();
                         BUS_ID= String.valueOf(selectedBusId);
-                        MainActivity.setTilteText(String.valueOf(selectedBusId));
+                        MainActivity.setTilteText("BUS ID : "+String.valueOf(selectedBusId));
                     }
                     dialog.dismiss();
                 })

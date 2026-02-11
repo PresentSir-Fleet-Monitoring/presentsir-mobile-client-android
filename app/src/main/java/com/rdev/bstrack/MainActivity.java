@@ -19,6 +19,7 @@ import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -181,9 +182,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         LoginResponse.User user = SecureStorageHelper.getLoginResponse(this).getUser();
         String userName= user.getName();
         String busID= String.valueOf(user.getBus().getBusId());
+        String routeName= String.valueOf(user.getBus().getRouteName());
         String userRole = user.getRoles().get(0);
 
-        titleTextView.setText("BUS ID : "+busID);
+        titleTextView.setText("Present Sir");
 
         setupNavigation(binding);
         setupSpeakerButton();
@@ -317,47 +319,72 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fragmentTransaction.commit();
     }
 
-    public void createHeart() {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastClickTime < 300) return; // Debounce clicks
-        lastClickTime = currentTime;
+    private final Handler heartHandler = new Handler(Looper.getMainLooper());
+    private boolean isHeartAnimationRunning = false;
 
-        CoordinatorLayout rootLayout = findViewById(R.id.root_layout);
-        if (rootLayout == null) {
-            Log.e(TAG, "Root layout is null!");
-            return;
+    // The loop that creates hearts
+    private final Runnable heartRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isHeartAnimationRunning) {
+                createHeart();
+                // Create a new heart every 600 milliseconds
+                heartHandler.postDelayed(this, 600);
+            }
         }
+    };
+
+    public void toggleHeartAnimation(boolean enable) {
+        isHeartAnimationRunning = enable;
+        if (enable) {
+            heartHandler.post(heartRunnable);
+        } else {
+            heartHandler.removeCallbacks(heartRunnable);
+        }
+    }
+
+    public void createHeart() {
+        CoordinatorLayout rootLayout = findViewById(R.id.root_layout);
+        if (rootLayout == null) return;
 
         ShapeableImageView heartImageView = new ShapeableImageView(this);
-        CoordinatorLayout.LayoutParams params = new CoordinatorLayout.LayoutParams(dpToPx(45), dpToPx(45));
+        int size = dpToPx(35); // Slightly smaller starting size
+        CoordinatorLayout.LayoutParams params = new CoordinatorLayout.LayoutParams(size, size);
+
         Random random = new Random();
         params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-        params.setMarginStart(random.nextInt(dpToPx(100)) - dpToPx(50));
-        params.bottomMargin = dpToPx(65);
+        // Randomize starting horizontal position
+        params.setMarginStart(random.nextInt(dpToPx(120)) - dpToPx(60));
+        params.bottomMargin = dpToPx(70);
+
         heartImageView.setLayoutParams(params);
         heartImageView.setImageResource(IMAGE_RESOURCES[random.nextInt(IMAGE_RESOURCES.length)]);
         rootLayout.addView(heartImageView);
 
+        // 1. Path Animation (Up and slight random side-to-side)
+        int xOffset = random.nextInt(dpToPx(100)) - dpToPx(50);
+        TranslateAnimation translate = new TranslateAnimation(0, xOffset, 0, -dpToPx(450));
+
+        // 2. Fade Out
+        AlphaAnimation alpha = new AlphaAnimation(1.0f, 0.0f);
+
+        // 3. Scale Up (Starts small, grows to 1.5x)
+        ScaleAnimation scale = new ScaleAnimation(0.5f, 1.5f, 0.5f, 1.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+
         AnimationSet animationSet = new AnimationSet(true);
-        TranslateAnimation translateAnimation = new TranslateAnimation(0, 0, 0, -dpToPx(400));
-        AlphaAnimation alphaAnimation = new AlphaAnimation(1.0f, 0.0f);
-        translateAnimation.setDuration(2000);
-        alphaAnimation.setDuration(2000);
-        animationSet.addAnimation(translateAnimation);
-        animationSet.addAnimation(alphaAnimation);
+        animationSet.addAnimation(translate);
+        animationSet.addAnimation(alpha);
+        animationSet.addAnimation(scale);
+        animationSet.setDuration(3000); // 3 seconds flight time
 
         animationSet.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationEnd(Animation animation) {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    if (heartImageView.getParent() != null) rootLayout.removeView(heartImageView);
-                });
+                rootLayout.post(() -> rootLayout.removeView(heartImageView));
             }
-
-            @Override
-            public void onAnimationStart(Animation animation) {}
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
+            @Override public void onAnimationStart(Animation animation) {}
+            @Override public void onAnimationRepeat(Animation animation) {}
         });
 
         heartImageView.startAnimation(animationSet);

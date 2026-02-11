@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -126,57 +127,53 @@ public class MapService implements OnMapReadyCallback {
 
 
     public void showBusLocationOnMap(double busLatitude, double busLongitude) {
+        if (mapmyIndiaMap == null) return; // Map isn't ready yet
+
         LatLng busLocation = new LatLng(busLatitude, busLongitude);
 
+        // 1. Handle Marker Drawing
         if (busMarker == null) {
             busMarker = mapmyIndiaMap.addMarker(new MarkerOptions()
                     .position(busLocation)
                     .icon(IconFactory.getInstance(context).fromResource(R.drawable.bus))
                     .title("Bus")
-                    .snippet("I am coming..."));
+                    .snippet("Live Tracking..."));
+
+            // Optional: Zoom to bus when it first appears
+            setCameraPosition(busLocation, 14, 0);
         } else {
             animateMarker(busMarker, busLocation);
         }
 
-        double distance = DistanceCalculator.calculateDistance(
-                mapmyIndiaMap.getLocationComponent().getLastKnownLocation().getLatitude(),
-                mapmyIndiaMap.getLocationComponent().getLastKnownLocation().getLongitude(),
-                busLatitude, busLongitude
-        );
+        // 2. Handle Distance & TTS (Safety Check)
+        if (mapmyIndiaMap.getLocationComponent() != null &&
+                mapmyIndiaMap.getLocationComponent().getLastKnownLocation() != null) {
 
+            double userLat = mapmyIndiaMap.getLocationComponent().getLastKnownLocation().getLatitude();
+            double userLng = mapmyIndiaMap.getLocationComponent().getLastKnownLocation().getLongitude();
 
-        double averageSpeedKmph = 40;
-        double etaMinutes = (distance / averageSpeedKmph) * 60;
+            double distance = DistanceCalculator.calculateDistance(
+                    userLat, userLng, busLatitude, busLongitude
+            );
 
-//        ttsHelper.speak("The bus is " + (int) distance + " kilometers away and will arrive in  " + (int) etaMinutes + " minutes.", MainActivity.isSpeakerOn);
-/*
- - This ensures the logic handles kilometer-based distances while allowing the user to select reminder thresholds in meters.
-          -If the current distance is 5.0 kilometers:
-                - User selects 500 meters:
-                    --Converted reminder distance:
-           - The system monitors the current distance.
-           - When the current distance reaches 0.5 kilometers or less, it triggers:
-                -- "The bus is 0.5 kilometers away and will arrive in X minutes.
-*/
-        double selectedReminderDistanceKm = Constants.getReminderMeter() / 1000.0;
-        double currentDistance = distance; // Current distance in kilometers
+            double averageSpeedKmph = 40;
+            double etaMinutes = (distance / averageSpeedKmph) * 60;
 
-        if (currentDistance <= selectedReminderDistanceKm) {
+            // Reminder Logic
+            double selectedReminderDistanceKm = Constants.getReminderMeter() / 1000.0;
 
-            if (etaMinutes<1){
-                ttsHelper.speak(
-                        "The bus is " + String.format("%.2f", currentDistance) + " kilometers away and will arrive in few minutes.",
-                        MainActivity.isSpeakerOn
-                );
-            }else {
-                ttsHelper.speak(
-                        "The bus is " + String.format("%.2f", currentDistance) + " kilometers away and will arrive in " +
-                                (int) etaMinutes + " minutes.",
-                        MainActivity.isSpeakerOn
-                );
+            if (distance <= selectedReminderDistanceKm) {
+                if (etaMinutes < 1) {
+                    ttsHelper.speak("The bus is very close and will arrive in a few minutes.", MainActivity.isSpeakerOn);
+                } else {
+                    ttsHelper.speak("The bus is " + String.format("%.2f", distance) +
+                                    " kilometers away and will arrive in " + (int) etaMinutes + " minutes.",
+                            MainActivity.isSpeakerOn);
+                }
             }
+        } else {
+            Log.w("MapService", "User location not available yet for distance calculation.");
         }
-
     }
 
     private void soundBusLocation(double busLatitude, double busLongitude) {

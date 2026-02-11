@@ -80,7 +80,7 @@ public class LocateBus extends Fragment  {
 
         LoginResponse loginResponse = SecureStorageHelper.getLoginResponse(getContext());
         this.USER_EMAIL =loginResponse.getUser().getEmail();
-        this.BUS_ID = String.valueOf(loginResponse.getUser().getBus().getBusId());
+//        this.BUS_ID = String.valueOf(loginResponse.getUser().getBus().getBusId());
         this.ROUTE_NAME= String.valueOf(loginResponse.getUser().getBus().getRouteName());
         this.AUTH_TOKEN= String.valueOf(loginResponse.getToken());
 
@@ -145,10 +145,13 @@ public class LocateBus extends Fragment  {
             showBusSelectionDialog();
         });
 
-
         shareLocationButton.setOnClickListener(v -> {
-//            sendLocation();
-               stompService.sendLocation(BUS_ID);
+            if (BUS_ID == null || BUS_ID.isEmpty()) {
+                Toast.makeText(getContext(), "Please select a bus first!", Toast.LENGTH_SHORT).show();
+                showBusSelectionDialog();
+            } else {
+                stompService.sendLocation(BUS_ID);
+            }
         });
 
         // Set click listeners for buttons
@@ -158,12 +161,14 @@ public class LocateBus extends Fragment  {
         });
 
 
-        busLocationButton.setOnClickListener(v ->{
-
-            stompService.getBusLocation(BUS_ID);
-
+        busLocationButton.setOnClickListener(v -> {
+            if (BUS_ID == null || BUS_ID.isEmpty()) {
+                Toast.makeText(getContext(), "Please select a bus to track!", Toast.LENGTH_SHORT).show();
+                showBusSelectionDialog();
+            } else {
+                stompService.getBusLocation(BUS_ID);
+            }
         });
-
         return view;
     }
 
@@ -191,65 +196,69 @@ public class LocateBus extends Fragment  {
 
 
     private void showBusSelectionDialog() {
-
-        try {
-
-            // Check if busesList is null or empty
-            if (busesList == null) {
-                busesList = new ArrayList<>();  // Ensure it's an empty list if loadBuses() returns null
-            }
-
-            busesWithNameId = new HashMap<>();
-
-            // Populate the busesWithNameId map with actual bus data
-            for (Buses bus : busesList) {
-                String route = bus.getRouteName();
-                String id = bus.getBusId();
-                busesWithNameId.put(route, new Buses(route, id));
-            }
-        } catch (Exception e) {
-            Toast.makeText(getContext(), "Error loading buses", Toast.LENGTH_SHORT).show();
+        // 1. Safety Check: If buses haven't loaded yet, try to load them and stop
+        if (busesList == null || busesList.isEmpty()) {
+            loadBuses(); // Refresh the list
+            Toast.makeText(getContext(), "Loading buses, please try again in a moment...", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        // Check if busesList is empty before proceeding
-        if (busesList.isEmpty()) {
-            Toast.makeText(getContext(), "No buses available", Toast.LENGTH_SHORT).show();
-            return; // Exit the method if no buses are available
-        }
-
-        // Prepare bus names for the dialog
+        // 2. Prepare Data Mapping
+        busesWithNameId = new HashMap<>();
         String[] busNames = new String[busesList.size()];
-        int checkedItem = 0;
+        int checkedItem = -1; // Default to no selection
 
-        // Get the bus names and set the default checked item based on ROUTE_NAME
         for (int i = 0; i < busesList.size(); i++) {
-            busNames[i] = busesList.get(i).getRouteName();
-            if (busNames[i].equals(ROUTE_NAME)) {
-                checkedItem = i;  // Mark the checked item based on ROUTE_NAME
+            Buses bus = busesList.get(i);
+            String route = bus.getRouteName();
+            String id = bus.getBusId();
+
+            busNames[i] = route;
+            busesWithNameId.put(route, bus);
+
+            // Pre-select the current bus in the list if it exists
+            if (route.equals(ROUTE_NAME)) {
+                checkedItem = i;
             }
         }
 
-        AtomicInteger selectedBusId = new AtomicInteger();
+        // Use Atomic types to capture values inside the listener lambda
+        AtomicInteger tempSelectedBusId = new AtomicInteger(BUS_ID != null ? Integer.parseInt(BUS_ID) : -1);
+        final String[] tempSelectedBusName = { ROUTE_NAME != null ? ROUTE_NAME : "" };
 
-        // Show the bus selection dialog
-        new MaterialAlertDialogBuilder(getContext())
-                .setTitle("Select Bus")
+        // 3. Build and Show Dialog
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Select Bus Route")
                 .setSingleChoiceItems(busNames, checkedItem, (dialog, which) -> {
-                    // When a bus is selected, get the bus ID
+                    // Update temporary selection
+                    tempSelectedBusName[0] = busNames[which];
                     Buses selectedBus = busesWithNameId.get(busNames[which]);
-                    selectedBusId.set(Integer.parseInt(selectedBus.getBusId()));
+                    if (selectedBus != null) {
+                        tempSelectedBusId.set(Integer.parseInt(selectedBus.getBusId()));
+                    }
                 })
-                .setPositiveButton("OK", (dialog, which) -> {
-                    if (selectedBusId.get() >0){
-                        Toast.makeText(getContext(), "Selected Bus ID: " + selectedBusId, Toast.LENGTH_SHORT).show();
-                        BUS_ID= String.valueOf(selectedBusId);
-                        MainActivity.setTilteText("BUS ID : "+String.valueOf(selectedBusId));
+                .setPositiveButton("SELECT", (dialog, which) -> {
+                    if (tempSelectedBusId.get() != -1) {
+                        // Update Fragment State
+                        this.BUS_ID = String.valueOf(tempSelectedBusId.get());
+                        this.ROUTE_NAME = tempSelectedBusName[0];
+
+                        // Update UI Title
+                        MainActivity.setTilteText(this.ROUTE_NAME);
+
+                        // Notify User
+                        Toast.makeText(getContext(), "Bus set to: " + this.ROUTE_NAME, Toast.LENGTH_SHORT).show();
+
+                        // Logic to immediately stop previous tracking if active
+                        // stompService.resetSubscriptions();
+                    } else {
+                        Toast.makeText(getContext(), "No bus selected", Toast.LENGTH_SHORT).show();
                     }
                     dialog.dismiss();
                 })
+                .setNegativeButton("CANCEL", (dialog, which) -> dialog.dismiss())
                 .show();
     }
-
 
     private void showBuyMeCoffeeDialog() {
         // Create a dialog

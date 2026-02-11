@@ -4,8 +4,8 @@ public class Constants {
 
     // URLs
     public static String APP_CONFIG_URL = "https://raw.githubusercontent.com/ranjit485/Terminal/master/";
-    public static String SERVER_URL = "https://presentsir-latest.onrender.com/";
-    public static String WEBSOCKET_URL = "wss://presentsir-latest.onrender.com/ps/ws";
+    public static String SERVER_URL = "https://presentsir-server.onrender.com/";
+    public static String WEBSOCKET_URL = "wss://presentsir-server.onrender.com/ps/ws";
 
     // OneSignal
     public static String ONESIGNAL_APP_ID = "f841a344-67bc-4525-966e-f5276babe410";
@@ -23,7 +23,7 @@ public class Constants {
     public static String shareLocationButtonVisibleToDriver = "YES";
     public static String shareLocationButtonVisibleToAdmin = "NO";
 
-    public static String changeBusButtonVisibleToEveryone = "NO";
+    public static String changeBusButtonVisibleToEveryone = "YES";
     public static String changeBusButtonVisibleToUser = "YES";
     public static String changeBusButtonVisibleToDriver = "NO";
     public static String changeBusButtonVisibleToAdmin = "NO";

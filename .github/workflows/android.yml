@@ -29,7 +29,6 @@ jobs:
       - name: Build Unsigned APK
         run: ./gradlew assembleRelease
 
-      # This step signs the APK and creates a aligned, signed version
       - name: Sign APK
         uses: r0adkll/sign-android-release@v1
         id: sign_app
@@ -53,25 +52,34 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository # Needed to read build.gradle.kts
+        uses: actions/checkout@v4
+
       - name: Download Signed APK
         uses: actions/download-artifact@v4
         with:
           name: signed-release-apk
           path: release-artifacts
 
-      - name: Generate Release Version
-        run: echo "RELEASE_VERSION=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
+      # This script finds 'versionName = "X.X"' in your build.gradle.kts
+      - name: Get Version Name
+        id: get_version
+        run: |
+          VERSION_NAME=$(grep "versionName =" app/build.gradle.kts | awk -F'"' '{print $2}')
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "TIMESTAMP=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
 
-      # NEW STEP: Rename the APK file
       - name: Rename APK
         run: |
-          mv release-artifacts/*.apk release-artifacts/PresentSir-${{ env.RELEASE_VERSION }}.apk
+          mv release-artifacts/*.apk release-artifacts/PresentSir-v${{ env.VERSION_NAME }}.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.RELEASE_VERSION }}
-          name: "BSTrack Release ${{ env.RELEASE_VERSION }}"
-          files: release-artifacts/BSTrack-*.apk  # Points to the new name
+          tag_name: "v${{ env.VERSION_NAME }}-${{ env.TIMESTAMP }}"
+          name: "PresentSir Release v${{ env.VERSION_NAME }}"
+          draft: false
+          prerelease: false
+          files: release-artifacts/PresentSir-v${{ env.VERSION_NAME }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

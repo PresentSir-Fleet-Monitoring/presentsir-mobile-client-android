@@ -62,11 +62,16 @@ jobs:
       - name: Generate Release Version
         run: echo "RELEASE_VERSION=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
 
+      # NEW STEP: Rename the APK file
+      - name: Rename APK
+        run: |
+          mv release-artifacts/*.apk release-artifacts/PresentSir-${{ env.RELEASE_VERSION }}.apk
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
-          name: "Signed Release ${{ env.RELEASE_VERSION }}"
-          files: release-artifacts/*.apk
+          name: "BSTrack Release ${{ env.RELEASE_VERSION }}"
+          files: release-artifacts/BSTrack-*.apk  # Points to the new name
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
